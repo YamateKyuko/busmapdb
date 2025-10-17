@@ -1,0 +1,69 @@
+// import { neon } from "@neondatabase/serverless";
+
+// import { neon } from "@neondatabase/serverless";
+import { Client } from 'pg'
+
+
+export const dynamic = 'force-static'
+ 
+export async function GET(req: Request, ctx: RouteContext<'/api/map/pattern/[...tilenum]'>) {
+  const tilenumstrs = (await ctx.params).tilenum;
+  const tilenums: number[] = [];
+  tilenumstrs.map((v, i) => {
+    const num = Number(v);
+    if (isNaN(num) || num < 0 || i> 3) {
+      return new Response('Bad Request', { status: 400 });
+    }
+    tilenums.push(num);
+  });
+  if (tilenums.length !== 3) {
+    return new Response('Bad Request', { status: 400 });
+  };
+  const [z, x, y] = tilenums as [number, number, number];
+  
+  // const sql = neon(`${process.env.DATABASE_URL}`);
+    
+  // //   // Insert the comment from the form into the Postgres database
+  //   const results = await sql`
+  //   select * from map.results
+  //   `;
+
+  const client = new Client(process.env.DATABASE_URL_LOCAL)
+  await client.connect();
+
+  
+  const res = await client.query(`
+    with bbox as (select st_transform(ST_TileEnvelope($1, $2, $3), 3857) as b)
+    SELECT
+      ST_AsMVT(q, 'mvt_polygons'),
+      array_agg(st_astext(geom)) as t
+    FROM (
+      SELECT
+        ST_AsMVTGeom(st_transform(geom, 3857), st_transform(ST_TileEnvelope($1, $2, $3), 3857)),
+        geom
+      FROM map.test_polygons, bbox
+      WHERE geom && st_transform(bbox.b, 4326)
+    ) q;
+    
+    
+    `, [z, x, y])
+  console.log(res.rows) // Hello world!
+  await client.end()
+
+
+
+
+
+
+  // const data = await res.json()
+ 
+  return Response.json({  })
+}
+
+
+
+
+
+
+
+
