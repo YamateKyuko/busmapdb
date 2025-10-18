@@ -1,8 +1,8 @@
 // import { neon } from "@neondatabase/serverless";
 
 // import { neon } from "@neondatabase/serverless";
-import { Client } from 'pg'
-
+import { NextResponse } from 'next/server';
+import { Client } from 'pg';
 
 export const dynamic = 'force-static'
  
@@ -39,25 +39,26 @@ export async function GET(req: Request, ctx: RouteContext<'/api/map/pattern/[...
       array_agg(st_astext(geom)) as t
     FROM (
       SELECT
-        ST_AsMVTGeom(st_transform(geom, 3857), st_transform(ST_TileEnvelope($1, $2, $3), 3857)),
+        ST_AsMVTGeom(st_transform(geom, 3857), bbox.b),
         geom
       FROM map.test_polygons, bbox
       WHERE geom && st_transform(bbox.b, 4326)
     ) q;
-    
-    
-    `, [z, x, y])
-  console.log(res.rows) // Hello world!
+  `, [z, x, y]);
+
+  console.log(res.rows);
   await client.end()
 
+  const tile = res.rows[0].st_asmvt;
 
-
-
-
-
-  // const data = await res.json()
- 
-  return Response.json({  })
+  return new NextResponse(tile, {
+    headers: {
+      'Content-Type': 'application/vnd.mapbox-vector-tile',
+      'Access-Control-Allow-Origin': 'http://127.0.0.1:5500',
+      'Access-Control-Allow-Methods': 'GET', // OPTONSを追加
+      'Access-Control-Allow-Headers': 'Content-Type', // 追加
+    },
+  });
 }
 
 
