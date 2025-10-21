@@ -46,7 +46,7 @@ export async function GET(req: Request, ctx: RouteContext<'/api/map/pattern/[...
     ) q;
   `, [z, x, y]);
 
-  console.log(res.rows);
+  // console.log(res.rows);
   await client.end()
 
   const tile = res.rows[0].st_asmvt;
@@ -54,7 +54,7 @@ export async function GET(req: Request, ctx: RouteContext<'/api/map/pattern/[...
   return new NextResponse(tile, {
     headers: {
       'Content-Type': 'application/vnd.mapbox-vector-tile',
-      'Access-Control-Allow-Origin': 'http://127.0.0.1:5500',
+      'Access-Control-Allow-Origin': `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}`,
       'Access-Control-Allow-Methods': 'GET', // OPTONSを追加
       'Access-Control-Allow-Headers': 'Content-Type', // 追加
     },
