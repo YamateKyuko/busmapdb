@@ -1,6 +1,6 @@
 'use client';
 import * as React from 'react';
-import Map, { Layer, LayerProps, Source, SourceProps, useControl } from 'react-map-gl/maplibre';
+import Map, { Layer, LayerProps, MapProvider, Source, SourceProps, useControl, useMap } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import maplibregl from 'maplibre-gl';
 
@@ -15,7 +15,7 @@ const layerStyle: LayerProps = {
     "line-width": 0.7,
   },
 }
-const sour: SourceProps = {
+const tileSource: SourceProps = {
   id: "mvt_data",
   type: "vector",
   // 
@@ -25,29 +25,6 @@ const sour: SourceProps = {
 }
 
 function Page() {
-  // async function create() {
-  //   'use server';
-    
-
-
-  // }
-
-  // const onload = (e: maplibregl.MapLibreEvent) => {
-  //   // const protocol = new pmtiles.Protocol()
-  //   console.log(e);
-  //   maplibregl.addProtocol('custom', async (params, abortController) => {
-  //     console.log('aaa');
-  //       const t = await fetch(`/api/map/pattern/{z}/{x}/{y}`);
-  //       if (t.status == 200) {
-  //           const buffer = await t.arrayBuffer();
-  //           return {data: buffer}
-  //       } else {
-  //           throw new Error(`Tile fetch error: ${t.statusText}`);
-  //       }
-  //   })
-  //   // setPmTilesReady(true)
-  // }
-
   React.useEffect(() => {
     maplibregl.addProtocol('custom', async (params) => {
       try {
@@ -60,9 +37,6 @@ function Page() {
       }
     })
   }, []);
-
-
-
 
   //   const [features, setFeatures] = React.useState({});
 
@@ -89,34 +63,59 @@ function Page() {
 
 
   return (
-    <Map
-      initialViewState={{
-        longitude: 139.74,
-        latitude: 35.68,
-        zoom: 14
-      }}
-      style={{width: 600, height: 400}}
-      mapStyle="https://raw.githubusercontent.com/gsi-cyberjapan/optimal_bvmap/52ba56f645334c979998b730477b2072c7418b94/style/std.json"
-      // onLoad={onload}
-    >
-      <Source {...sour}>
-        <Layer {...layerStyle} />
-      </Source>
-      <DrawControl
-        position="top-left"
-        displayControlsDefault={false}
-        controls={{
-          polygon: true,
-          trash: true
-        }}
-        // defaultMode="draw_polygon"
-        // onCreate={onUpdate}
-        // onUpdate={onUpdate}
-        // onDelete={onDelete}
-      />
-    </Map>
+    <>
+      <React.Suspense fallback={<div>Loading Map...</div>}>
+        {/* <ActionForm /> */}
+        {/* <ClientRefresh /> */}
+        
+      </React.Suspense>
+      <MapProvider>
+        <Map
+          id="map"
+          initialViewState={{
+            longitude: 139.76,
+            latitude: 35.68,
+            zoom: 14
+          }}
+          style={{width: 600, height: 400}}
+          mapStyle="https://raw.githubusercontent.com/gsi-cyberjapan/optimal_bvmap/52ba56f645334c979998b730477b2072c7418b94/style/std.json"
+        >
+          <Source {...tileSource}>
+            <Layer {...layerStyle} />
+          </Source>
+          <DrawControl
+            position="top-left"
+            displayControlsDefault={false}
+            controls={{
+              polygon: true,
+              trash: true
+            }}
+            // defaultMode="draw_polygon"
+            // onCreate={onUpdate}
+            // onUpdate={onUpdate}
+            // onDelete={onDelete}
+          />
+        </Map>
+        <Navigation>
+
+        </Navigation>
+
+      </MapProvider>
+      
+    </>
+    
   );
 }
+
+function Navigation() {
+  const {map}  = useMap();
+  console.log(map);
+  return (
+    <>
+    </>
+  )
+}
+
 
 function DrawControl(props: {
   position: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right',
