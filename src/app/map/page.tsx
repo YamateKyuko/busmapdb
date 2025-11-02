@@ -1,9 +1,8 @@
 'use client';
 import * as React from 'react';
-import Map, { Layer, LayerProps, MapProvider, Source, SourceProps, useControl, useMap } from 'react-map-gl/maplibre';
+import Map, { Layer, LayerProps, MapProvider, Source, SourceProps, useMap } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import maplibregl from 'maplibre-gl';
-import { on } from 'events';
 
 const layerStyle: LayerProps = {
   id: "mvt_data_line",
@@ -13,19 +12,19 @@ const layerStyle: LayerProps = {
   layout: {},
   paint: {
     "line-color": "#2d2d70",
-    "line-width": 0.7,
+    "line-width": 2,
   },
 }
-const layerStyle2: LayerProps = {
-  id: "mvt_data_fill",
-  type: "fill",
-  source: "mvt_data",
-  "source-layer": "mvt_polygons", // server.jsで決めている名前を指定
-  layout: {},
-  paint: {
-    "fill-color": "#888888",
-  },
-}
+// const layerStyle2: LayerProps = {
+//   id: "mvt_data_fill",
+//   type: "fill",
+//   source: "mvt_data",
+//   "source-layer": "mvt_polygons", // server.jsで決めている名前を指定
+//   layout: {},
+//   paint: {
+//     "fill-color": "#888888",
+//   },
+// }
 const tileSource: SourceProps = {
   id: "mvt_data",
   type: "vector",
@@ -72,7 +71,7 @@ function Page() {
         >
           <Source {...tileSource}>
             <Layer {...layerStyle} />
-            <Layer {...layerStyle2} />
+            {/* <Layer {...layerStyle2} /> */}
           </Source>
           <DrawControl
             position="top-left"

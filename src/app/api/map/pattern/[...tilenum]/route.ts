@@ -33,6 +33,20 @@ export async function GET(_req: Request, ctx: RouteContext<'/api/map/pattern/[..
   // console.log(await client.query(`select * from stops limit 1;`));
 
   
+  // const res = await client.query(`
+  //   with bbox as (select st_transform(ST_TileEnvelope($1, $2, $3), 3857) as b)
+  //   SELECT
+  //     ST_AsMVT(q, 'mvt_polygons'),
+  //     array_agg(st_astext(geom)) as t
+  //   FROM (
+  //     SELECT
+  //       ST_AsMVTGeom(st_transform(geom, 3857), bbox.b),
+  //       geom
+  //     FROM map.test_polygons, bbox
+  //     WHERE geom && st_transform(bbox.b, 4326)
+  //   ) q;
+  // `, [z, x, y]);
+
   const res = await client.query(`
     with bbox as (select st_transform(ST_TileEnvelope($1, $2, $3), 3857) as b)
     SELECT
@@ -42,7 +56,7 @@ export async function GET(_req: Request, ctx: RouteContext<'/api/map/pattern/[..
       SELECT
         ST_AsMVTGeom(st_transform(geom, 3857), bbox.b),
         geom
-      FROM map.test_polygons, bbox
+      FROM busmap.maproutes, bbox
       WHERE geom && st_transform(bbox.b, 4326)
     ) q;
   `, [z, x, y]);

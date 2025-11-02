@@ -10,7 +10,7 @@ create table busmap.maproutes(
   patterns integer[]
 );
 
-drop table busmap.maproutes
+-- drop table busmap.maproutes
 
 -- drop table if exists busmap.mappatterns;
 -- create table busmap.mappattern(
