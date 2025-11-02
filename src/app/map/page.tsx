@@ -63,9 +63,10 @@ function Page() {
         <Map
           id="map"
           initialViewState={{
-            longitude: 139.76,
-            latitude: 35.68,
-            zoom: 14
+            // 35.68674602787891, 139.48947555916342
+            longitude: 139.50,
+            latitude: 35.69,
+            zoom: 12
           }}
           style={{width: 600, height: 400}}
           mapStyle="https://raw.githubusercontent.com/gsi-cyberjapan/optimal_bvmap/52ba56f645334c979998b730477b2072c7418b94/style/std.json"
