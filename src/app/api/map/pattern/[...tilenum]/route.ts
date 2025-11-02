@@ -30,7 +30,7 @@ export async function GET(req: Request, ctx: RouteContext<'/api/map/pattern/[...
 
   const client = new Client(process.env.DATABASE_URL_LOCAL)
   await client.connect();
-  console.log(await client.query(`select * from stops limit 1;`));
+  // console.log(await client.query(`select * from stops limit 1;`));
 
   
   const res = await client.query(`
