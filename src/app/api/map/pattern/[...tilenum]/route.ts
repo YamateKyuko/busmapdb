@@ -6,7 +6,7 @@ import { Client } from 'pg';
 
 export const dynamic = 'force-static'
  
-export async function GET(req: Request, ctx: RouteContext<'/api/map/pattern/[...tilenum]'>) {
+export async function GET(_req: Request, ctx: RouteContext<'/api/map/pattern/[...tilenum]'>) {
   const tilenumstrs = (await ctx.params).tilenum;
   const tilenums: number[] = [];
   tilenumstrs.map((v, i) => {
@@ -55,7 +55,7 @@ export async function GET(req: Request, ctx: RouteContext<'/api/map/pattern/[...
   return new NextResponse(tile, {
     headers: {
       'Content-Type': 'application/vnd.mapbox-vector-tile',
-      'Access-Control-Allow-Origin': `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}`,
+      'Access-Control-Allow-Origin': `${process.env.NEXT_PUBLIC_BASE_URL || ''}`,
       'Access-Control-Allow-Methods': 'GET', // OPTONSを追加
       'Access-Control-Allow-Headers': 'Content-Type', // 追加
     },

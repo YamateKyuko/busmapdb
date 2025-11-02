@@ -3,6 +3,7 @@ import * as React from 'react';
 import Map, { Layer, LayerProps, MapProvider, Source, SourceProps, useControl, useMap } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import maplibregl from 'maplibre-gl';
+import { on } from 'events';
 
 const layerStyle: LayerProps = {
   id: "mvt_data_line",
@@ -13,6 +14,16 @@ const layerStyle: LayerProps = {
   paint: {
     "line-color": "#2d2d70",
     "line-width": 0.7,
+  },
+}
+const layerStyle2: LayerProps = {
+  id: "mvt_data_fill",
+  type: "fill",
+  source: "mvt_data",
+  "source-layer": "mvt_polygons", // server.jsで決めている名前を指定
+  layout: {},
+  paint: {
+    "fill-color": "#888888",
   },
 }
 const tileSource: SourceProps = {
@@ -38,27 +49,6 @@ function Page() {
     })
   }, []);
 
-  //   const [features, setFeatures] = React.useState({});
-
-  // const onUpdate = React.useCallback(e => {
-  //   setFeatures(currFeatures => {
-  //     const newFeatures = {...currFeatures};
-  //     for (const f of e.features) {
-  //       newFeatures[f.id] = f;
-  //     }
-  //     return newFeatures;
-  //   });
-  // }, []);
-
-  // const onDelete = useCallback(e => {
-  //   setFeatures(currFeatures => {
-  //     const newFeatures = {...currFeatures};
-  //     for (const f of e.features) {
-  //       delete newFeatures[f.id];
-  //     }
-  //     return newFeatures;
-  //   });
-  // }, []);
 
 
 
@@ -82,6 +72,7 @@ function Page() {
         >
           <Source {...tileSource}>
             <Layer {...layerStyle} />
+            <Layer {...layerStyle2} />
           </Source>
           <DrawControl
             position="top-left"
@@ -95,10 +86,9 @@ function Page() {
             // onUpdate={onUpdate}
             // onDelete={onDelete}
           />
+          <Navigation />
         </Map>
-        <Navigation>
-
-        </Navigation>
+        
 
       </MapProvider>
       
@@ -108,8 +98,36 @@ function Page() {
 }
 
 function Navigation() {
+  
+  // console.log(map);
   const {map}  = useMap();
-  console.log(map);
+
+  React.useEffect(() => {
+    console.log('mapload');
+    if (!map) return;
+    const onClick = (e: maplibregl.MapMouseEvent) => {
+      const features = map.queryRenderedFeatures(e.point, { layers: ['mvt_data_fill'] });
+      console.log('clicked features:', features);
+
+      if (features && features.length > 0) {
+        // const props = features[0].properties || {};
+        // 簡単なポップアップ表示（必要な場合）
+        // new maplibregl.Popup()
+        //   .setLngLat(e.lngLat)
+        //   .setHTML(`<pre>${JSON.stringify(props, null, 2)}</pre>`)
+        //   .addTo(map);
+      }
+    };
+    map.on('click', onClick);
+    return () => {
+      map.off('click', onClick);
+    }
+  }, [map]);
+
+  
+
+  
+
   return (
     <>
     </>
