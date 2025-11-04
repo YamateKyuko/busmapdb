@@ -50,15 +50,22 @@ export async function GET(_req: Request, ctx: RouteContext<'/api/map/pattern/[..
   const res = await client.query(`
     with bbox as (select st_transform(ST_TileEnvelope($1, $2, $3), 3857) as b)
     SELECT
-      ST_AsMVT(q, 'mvt_polygons'),
-      array_agg(st_astext(geom)) as t
+      ST_AsMVT(q, 'mvt_polygons') || ST_AsMVT(p, 'mvt_poly') as st_asmvt
+      -- array_agg(st_astext(geom)) as t
     FROM (
       SELECT
         ST_AsMVTGeom(st_transform(geom, 3857), bbox.b),
         geom
       FROM busmap.maproutes, bbox
       WHERE geom && st_transform(bbox.b, 4326)
-    ) q;
+    ) q,
+    (
+      SELECT
+        ST_AsMVTGeom(st_transform(geom, 3857), bbox.b),
+        geom
+      FROM busmap.mapstations, bbox
+      WHERE geom && st_transform(bbox.b, 4326)
+    ) p;
   `, [z, x, y]);
 
   // console.log(res.rows);

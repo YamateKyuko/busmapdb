@@ -24,12 +24,13 @@ create table busmap.maproutes(
 --   geom geometry(linestring, 4326)
 -- );
 
--- drop table if exists busmap.mapstations;
--- create table busmap.stations(
---   mapstation_id integer generated always as identity,
---   mapstation_name text,
---   geom geometry(polygon, 4326)
--- );
+drop table if exists busmap.mapstations;
+create table busmap.mapstations(
+  station_id integer,
+  station_name text,
+  patterns integer[],
+  geom geometry(polygon, 4326)
+);
 
 -- drop table if exists busmap.mapstops;
 -- create table busmap.mapstops(

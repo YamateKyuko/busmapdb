@@ -106,7 +106,7 @@ function Navigation() {
     console.log('mapload');
     if (!map) return;
     const onClick = (e: maplibregl.MapMouseEvent) => {
-      const features = map.queryRenderedFeatures(e.point, { layers: ['mvt_data_fill'] });
+      const features = map.queryRenderedFeatures(e.point, { layers: ['mvt_data_line'] });
       console.log('clicked features:', features);
 
       if (features && features.length > 0) {

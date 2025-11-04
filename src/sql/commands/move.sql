@@ -27,7 +27,13 @@ select
   -- null as thickness
 from merged;
 
--- delete from busmap.mapstations;
+delete from busmap.mapstations;
+insert into busmap.mapstations (
+  geom,
+  patterns,
+  station_id,
+  station_name
+)
 with a as (
   select
     geom,
@@ -43,15 +49,12 @@ with a as (
   inner join stops using (feed_id, stop_id)
 )
 select 
-  st_buffer(st_convexhull(st_collect(geom)), 0.000125),
+  st_buffer(st_convexhull(st_collect(geom)), 0.000125) as geom,
   array_agg(pattern_id) as patterns,
   station_id,
   stop_name
-
-
-
 from a
-group by feed_id, route_id, station_id, stop_name;
+group by feed_id, station_id, stop_name;
 
 
 -- insert into busmap.maproutes (
