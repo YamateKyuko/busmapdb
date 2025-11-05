@@ -4,35 +4,49 @@ import Map, { Layer, LayerProps, MapProvider, Source, SourceProps, useMap } from
 import 'maplibre-gl/dist/maplibre-gl.css';
 import maplibregl from 'maplibre-gl';
 
-const layerStyle: LayerProps = {
-  id: "mvt_data_line",
-  type: "line",
-  source: "mvt_data",
-  "source-layer": "mvt_polygons", // server.jsで決めている名前を指定
-  layout: {},
-  paint: {
-    "line-color": "#2d2d70",
-    "line-width": 2,
-  },
-}
-// const layerStyle2: LayerProps = {
-//   id: "mvt_data_fill",
-//   type: "fill",
-//   source: "mvt_data",
-//   "source-layer": "mvt_polygons", // server.jsで決めている名前を指定
-//   layout: {},
-//   paint: {
-//     "fill-color": "#888888",
-//   },
-// }
-const tileSource: SourceProps = {
-  id: "mvt_data",
+const patternSource: SourceProps = {
+  id: "patternSource",
   type: "vector",
-  // 
-  tiles: [`custom://api/map/pattern/{z}/{x}/{y}`],
+  tiles: [`custom://api/map/patterns/{z}/{x}/{y}`],
   minzoom: 0,
   maxzoom: 14,
 }
+
+const patternLayerStyle: LayerProps = {
+  id: "patternLayer",
+  type: "line",
+  source: "patternSource",
+  "source-layer": "mvt_polygons",
+  layout: {},
+  paint: {
+    "line-color": "#2d2d70",
+    "line-width": 5,
+  },
+}
+
+const stationSource: SourceProps = {
+  id: "stationSource",
+  type: "vector",
+  tiles: [`custom://api/map/stations/{z}/{x}/{y}`],
+  minzoom: 0,
+  maxzoom: 14,
+}
+
+const stationLayerStyle: LayerProps = {
+  id: "stationLayer",
+  type: "fill",
+  source: "stationSource",
+  "source-layer": "mvt_poly",
+  layout: {},
+  paint: {
+    "fill-color": "#888888",
+    "fill-outline-color": "#000000",
+    "fill-opacity": 1,
+  },
+}
+
+
+
 
 function Page() {
   React.useEffect(() => {
@@ -70,9 +84,12 @@ function Page() {
           style={{width: 600, height: 400}}
           mapStyle="https://raw.githubusercontent.com/gsi-cyberjapan/optimal_bvmap/52ba56f645334c979998b730477b2072c7418b94/style/std.json"
         >
-          <Source {...tileSource}>
-            <Layer {...layerStyle} />
+          <Source {...patternSource}>
+            <Layer {...patternLayerStyle} />
             {/* <Layer {...layerStyle2} /> */}
+          </Source>
+          <Source {...stationSource}>
+            <Layer {...stationLayerStyle} />
           </Source>
           <DrawControl
             position="top-left"
@@ -106,7 +123,7 @@ function Navigation() {
     console.log('mapload');
     if (!map) return;
     const onClick = (e: maplibregl.MapMouseEvent) => {
-      const features = map.queryRenderedFeatures(e.point, { layers: ['mvt_data_line'] });
+      const features = map.queryRenderedFeatures(e.point, { layers: ['patternLayer'] });
       console.log('clicked features:', features);
 
       if (features && features.length > 0) {
