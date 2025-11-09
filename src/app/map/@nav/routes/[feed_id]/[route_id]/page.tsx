@@ -2,6 +2,7 @@
 
 async function Page(props: PageProps<'/map/routes/[feed_id]/[route_id]'>) {
   const params = await props.params;
+  console.log(params);
   return (
     <>
       nav/routes

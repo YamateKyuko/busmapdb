@@ -3,6 +3,7 @@ import * as React from 'react';
 import Map, { Layer, LayerProps, MapProvider, Source, SourceProps, useMap } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import maplibregl from 'maplibre-gl';
+import Link from 'next/link';
 
 const patternSource: SourceProps = {
   id: "patternSource",
@@ -73,6 +74,7 @@ export default function MapComponent(props: {s?: () => Promise<void>}) {
 
   return (
     <>
+      <Link href="/map/routes/1/1">Back to /map</Link>
       <button onClick={props.s}>Log Map Load</button>
       <React.Suspense fallback={<div>Loading Map...</div>}>
         {/* <ActionForm /> */}
