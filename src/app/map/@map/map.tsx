@@ -4,6 +4,7 @@ import Map, { Layer, LayerProps, MapProvider, Source, SourceProps, useMap } from
 import 'maplibre-gl/dist/maplibre-gl.css';
 import maplibregl from 'maplibre-gl';
 import Link from 'next/link';
+import { setStationsNavParams } from './page';
 
 const patternSource: SourceProps = {
   id: "patternSource",
@@ -57,7 +58,7 @@ const stationLayerStyle: LayerProps = {
 
 
 
-export default function MapComponent(props: {s?: () => Promise<void>}) {
+export default function MapComponent(props: {setStationNav: (params: setStationsNavParams) => Promise<void>}) {
   React.useEffect(() => {
     maplibregl.addProtocol('custom', async (params) => {
       try {
@@ -75,7 +76,7 @@ export default function MapComponent(props: {s?: () => Promise<void>}) {
   return (
     <>
       <Link href="/map/routes/1/1">Back to /map</Link>
-      <button onClick={props.s}>Log Map Load</button>
+      <button onClick={() => props.setStationNav({station_id: 1})}>Log Map Load</button>
       <React.Suspense fallback={<div>Loading Map...</div>}>
         {/* <ActionForm /> */}
         {/* <ClientRefresh /> */}
@@ -90,7 +91,10 @@ export default function MapComponent(props: {s?: () => Promise<void>}) {
             latitude: 35.69,
             zoom: 13
           }}
-          style={{width: 800, height: 800}}
+          style={{
+            width: 800,
+            height: 400
+          }}
           mapStyle="https://raw.githubusercontent.com/gsi-cyberjapan/optimal_bvmap/52ba56f645334c979998b730477b2072c7418b94/style/std.json"
         >
           <Source {...patternSource}>
