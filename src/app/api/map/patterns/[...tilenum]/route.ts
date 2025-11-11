@@ -48,15 +48,15 @@ export async function GET(_req: Request, ctx: RouteContext<'/api/map/patterns/[.
       WHERE geom && st_transform(bbox.b, 4326)
     )
     SELECT
-      ST_AsMVT(q, 'mvt_polygons') as tile
+      ST_AsMVT(q, 'patternLayer') as tile
     FROM q;
   `, [z, x, y]);
 
   await client.end()
 
   const tile = res.rows[0].tile;
-  console.log(res.rows.length);
-  console.log(`tile size: ${tile.length} bytes`);
+  // console.log(res.rows.length);
+  // console.log(`tile size: ${tile.length} bytes`);
 
   return new NextResponse(tile, {
     headers: {

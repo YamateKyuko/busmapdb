@@ -18,7 +18,7 @@ const patternLayerStyle: LayerProps = {
   id: "patternLayer",
   type: "line",
   source: "patternSource",
-  "source-layer": "mvt_polygons",
+  "source-layer": "patternLayer",
   layout: {},
   paint: {
     "line-color": "#2d2d70",
@@ -46,7 +46,7 @@ const stationLayerStyle: LayerProps = {
   id: "stationLayer",
   type: "fill",
   source: "stationSource",
-  "source-layer": "mvt_poly",
+  "source-layer": "stationLayer",
   layout: {},
   paint: {
     "fill-color": "#888888",
@@ -116,7 +116,9 @@ export default function MapComponent(props: {setStationNav: (params: setStations
             // onUpdate={onUpdate}
             // onDelete={onDelete}
           />
-          <Navigation />
+          <Navigation
+            setStationNav={props.setStationNav}
+          />
         </Map>
         
 
@@ -127,7 +129,7 @@ export default function MapComponent(props: {setStationNav: (params: setStations
   );
 }
 
-function Navigation() {
+function Navigation(props: {setStationNav: (params: setStationsNavParams) => Promise<void>}) {
   
   // console.log(map);
   const {map}  = useMap();
@@ -136,16 +138,14 @@ function Navigation() {
     console.log('mapload');
     if (!map) return;
     const onClick = (e: maplibregl.MapMouseEvent) => {
-      const features = map.queryRenderedFeatures(e.point, { layers: ['patternLayer'] });
-      console.log('clicked features:', features);
-
+      const features = map.queryRenderedFeatures(e.point, { layers: ['patternLayer', 'stationLayer'] });
+      console.log(features);
       if (features && features.length > 0) {
-        // const props = features[0].properties || {};
-        // 簡単なポップアップ表示（必要な場合）
-        // new maplibregl.Popup()
-        //   .setLngLat(e.lngLat)
-        //   .setHTML(`<pre>${JSON.stringify(props, null, 2)}</pre>`)
-        //   .addTo(map);
+        const feature = features[0];
+        if (feature.sourceLayer === 'stationLayer') {
+          console.log('station clicked:', feature);
+          props.setStationNav({station_id: Number(feature.properties?.station_id)});
+        }
       }
     };
     map.on('click', onClick);

@@ -24,11 +24,11 @@ export async function GET(_req: Request, ctx: RouteContext<'/api/map/stations/[.
   const res = await client.query(`
     with bbox as (select st_transform(ST_TileEnvelope($1, $2, $3), 3857) as b)
     SELECT
-      ST_AsMVT(p, 'mvt_poly') as st_asmvt
+      ST_AsMVT(p, 'stationLayer') as st_asmvt
     FROM (
       SELECT
         ST_AsMVTGeom(st_transform(geom, 3857), bbox.b),
-        geom
+        station_id
       FROM busmap.mapstations, bbox
       WHERE geom && st_transform(bbox.b, 4326)
     ) p;
