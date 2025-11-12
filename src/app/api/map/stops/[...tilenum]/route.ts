@@ -3,7 +3,7 @@ import { Client } from 'pg';
 
 export const dynamic = 'force-static'
 
-export async function GET(_req: Request, ctx: RouteContext<'/api/map/stations/[...tilenum]'>) {
+export async function GET(_req: Request, ctx: RouteContext<'/api/map/stops/[...tilenum]'>) {
   const tilenumstrs = (await ctx.params).tilenum;
   const tilenums: number[] = [];
   tilenumstrs.map((v, i) => {

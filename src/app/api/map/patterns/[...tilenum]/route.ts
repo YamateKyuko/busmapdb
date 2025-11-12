@@ -41,8 +41,8 @@ export async function GET(_req: Request, ctx: RouteContext<'/api/map/patterns/[.
         ST_AsMVTGeom(st_transform(geom, 3857), bbox.b) as geom,
         feed_id,
         route_id,
-        patterns
-
+        patterns,
+        route_name
 
       FROM busmap.maproutes, bbox
       WHERE geom && st_transform(bbox.b, 4326)

@@ -32,18 +32,18 @@ create table busmap.mapstations(
   geom geometry(polygon, 4326)
 );
 
--- drop table if exists busmap.mapstops;
--- create table busmap.mapstops(
---   pattern_id integer,
---   stop_sequence integer,
---   mappattern_sequence integer,
---   maproute_id integer,
---   feed_id text,
---   route_id text,
---   route_name text,
---   stop_name text,
---   geom geometry(point, 4326)
--- );
+drop table if exists busmap.mapstops;
+create table busmap.mapstops(
+  pattern_id integer,
+  -- stop_sequence integer,
+  -- mappattern_sequence integer,
+  -- maproute_id integer,
+  feed_id text,
+  route_id text,
+  route_name text,
+  stop_name text,
+  geom geometry(point, 4326)
+);
 
 -- -- drop table if exists busmap.mapstoppatterns;
 -- -- create table busmap.mapstoppatterns(

@@ -5,6 +5,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import maplibregl from 'maplibre-gl';
 import Link from 'next/link';
 import { setStationsNavParams } from './page';
+import { get } from 'http';
 
 const patternSource: SourceProps = {
   id: "patternSource",
@@ -28,10 +29,30 @@ const patternLayerStyle: LayerProps = {
             ['zoom'],
             2,
             5,
-            // 22,
-            // 1
         ],
   },
+}
+
+const patternLayerStyleStr: LayerProps = {
+  id: "patternLayerStr",
+  type: "symbol",
+  source: "patternSource",
+  "source-layer": "patternLayer",
+    'layout': {
+      'icon-image': '', //アイコン画像は使わない
+      'text-font': ["NotoSans-SemiBold"], //文字フォントの指定
+      'text-anchor': 'top', //テキスト表示位置の指定
+      'text-allow-overlap': true, //テキストが重なっても表示する
+      'text-size': 7, //テキストサイズの指定
+      // 'text-size': ['interpolate',['linear'],['zoom'],5,8,8,11,15,18], //テキストサイズはズームレベルに応じて指定
+      'text-offset': [0,0], //テキストのオフセットは無し
+      'text-field': ['get', 'route_name'], //テキスト表示する属性項目を指定（'{名称}'と記述してもOK）
+  },
+  'paint':{
+      'text-color': '#555', //テキストの色指定
+      'text-halo-color': '#fff', //テキストの外縁の色指定
+      'text-halo-width': 1 //テキストの外縁の幅指定
+  }
 }
 
 const stationSource: SourceProps = {
@@ -55,6 +76,27 @@ const stationLayerStyle: LayerProps = {
   },
 }
 
+const stationLayerStyleStr: LayerProps = {
+  id: "stationLayerStr",
+  type: "symbol",
+  source: "stationSource",
+  "source-layer": "stationLayer",
+    'layout': {
+      'icon-image': '', //アイコン画像は使わない
+      'text-font': ["NotoSans-SemiBold"], //文字フォントの指定
+      'text-anchor': 'center', //テキスト表示位置の指定
+      'text-allow-overlap': true, //テキストが重なっても表示する
+      'text-size': 12, //テキストサイズの指定
+      // 'text-size': ['interpolate',['linear'],['zoom'],5,8,8,11,15,18], //テキストサイズはズームレベルに応じて指定
+      'text-offset': [0,0], //テキストのオフセットは無し
+      'text-field': ['get', 'station_name'], //テキスト表示する属性項目を指定（'{名称}'と記述してもOK）
+  },
+  'paint':{
+      'text-color': '#555', //テキストの色指定
+      'text-halo-color': '#fff', //テキストの外縁の色指定
+      'text-halo-width': 1 //テキストの外縁の幅指定
+  }
+}
 
 
 
@@ -99,10 +141,11 @@ export default function MapComponent(props: {setStationNav: (params: setStations
         >
           <Source {...patternSource}>
             <Layer {...patternLayerStyle} />
-            {/* <Layer {...layerStyle2} /> */}
+            <Layer {...patternLayerStyleStr} />
           </Source>
           <Source {...stationSource}>
             <Layer {...stationLayerStyle} />
+            <Layer {...stationLayerStyleStr} />
           </Source>
           <DrawControl
             position="top-left"
