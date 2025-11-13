@@ -38,11 +38,12 @@ create table busmap.mapstops(
   -- stop_sequence integer,
   -- mappattern_sequence integer,
   -- maproute_id integer,
-  feed_id text,
+  feed_id integer,
   route_id text,
   route_name text,
   stop_name text,
-  geom geometry(point, 4326)
+  geom geometry(point, 4326),
+  stop_id text
 );
 
 -- -- drop table if exists busmap.mapstoppatterns;

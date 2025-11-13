@@ -28,6 +28,7 @@ export async function GET(_req: Request, ctx: RouteContext<'/api/map/stations/[.
     FROM (
       SELECT
         ST_AsMVTGeom(st_transform(geom, 3857), bbox.b),
+        'station' as type,
         station_id,
         station_name
       FROM busmap.mapstations, bbox
@@ -48,3 +49,37 @@ export async function GET(_req: Request, ctx: RouteContext<'/api/map/stations/[.
     },
   });
 };
+
+// with bbox as (select st_transform(ST_TileEnvelope($1, $2, $3), 3857) as b)
+//     SELECT
+//       ST_AsMVT(p, 'stationLayer') as st_asmvt
+//     FROM (
+//       SELECT
+//         ST_AsMVTGeom(st_transform(geom, 3857), bbox.b),
+//         'station' as type,
+//         json_object(
+//           'type': 'station',
+//           'station_id': station_id,
+//           'station_name': station_name
+//         ) as properties
+//         -- station_id,
+//         -- station_name
+//       FROM busmap.mapstations, bbox
+//       WHERE geom && st_transform(bbox.b, 4326)
+//       union all
+//       SELECT
+//         ST_AsMVTGeom(st_transform(geom, 3857), bbox.b),
+//         'stop' as type,
+//         json_object(
+//           'type': 'stop',
+//           'pattern_id': pattern_id,
+//           'route_id': route_id,
+//           'feed_id': feed_id,
+//           -- 'station_id': station_id,
+//           'stop_id': stop_id,
+//           'route_name': route_name
+//         ) as properties
+
+//       FROM busmap.mapstops, bbox
+//       WHERE geom && st_transform(bbox.b, 4326)
+//     ) p;

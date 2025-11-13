@@ -57,28 +57,26 @@ from a
 group by feed_id, station_id, stop_name;
 
 delete from busmap.mapstops;
-insert into busmap.mapstops
-with a as (
-  select
-    geom,
-    pattern_id,
-    stop_sequence,
-    feed_id,
-    route_id,
-    stop_patterns.stop_name,
-    station_id
-
-  from map.pts
-  inner join stop_patterns using (pattern_id, stop_sequence)
-  inner join stops using (feed_id, stop_id)
+insert into busmap.mapstops (
+  pattern_id,
+  feed_id,
+  route_id,
+  route_name,
+  stop_name,
+  stop_id,
+  geom
 )
 select 
-  st_buffer(st_convexhull(st_collect(geom)), 0.000125) as geom,
-  array_agg(pattern_id) as patterns,
-  station_id,
-  stop_name
-from a
-group by feed_id, station_id, stop_name;
+  pattern_id,
+  feed_id,
+  route_id,
+  route_name,
+  stops.stop_name,
+  stop_id,
+  geom
+from map.pts
+inner join stop_patterns using (pattern_id, stop_sequence)
+inner join stops using (feed_id, stop_id);
 
 
 -- insert into busmap.maproutes (
