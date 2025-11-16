@@ -20,5 +20,5 @@ select
   st_makeline(least, greatest) as geom
   -- null as thickness
 from merged
-inner join 
+-- inner join 
 ;
