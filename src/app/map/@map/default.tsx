@@ -1,6 +1,8 @@
+import MapComponent from "./mapComponent";
+
 function Page() {
   return (
-    <>map/map/default</>
+    <MapComponent />
   );
 };
 

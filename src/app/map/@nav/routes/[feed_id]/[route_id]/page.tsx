@@ -1,4 +1,8 @@
+import { APIrequester } from "@/app/map/lib/request";
 
+// const stationsRequester = new APIrequester<statio>(
+//   'gtfsdb/stations', 'db'
+// )
 
 async function Page(props: PageProps<'/map/routes/[feed_id]/[route_id]'>) {
   const params = await props.params;

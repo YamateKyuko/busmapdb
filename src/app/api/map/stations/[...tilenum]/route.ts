@@ -36,7 +36,7 @@ export async function GET(_req: Request, ctx: RouteContext<'/api/map/stations/[.
     ) p;
   `, [z, x, y]);
 
-  await client.end()
+  await client.end();
 
   const tile = res.rows[0].st_asmvt;
 
