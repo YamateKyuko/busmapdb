@@ -7,6 +7,8 @@ create table busmap.maproutes(
   route_id text,
   route_name text,
   geom geometry(linestring, 4326),
+  station_id integer,
+  next_station_id integer,
   patterns integer[]
 );
 

@@ -1,6 +1,6 @@
 'use client';
 import * as React from 'react';
-import Map, { Layer, MapProvider, Source, useMap } from 'react-map-gl/maplibre';
+import Map, { Layer, MapProvider, MapRef, Source, useMap } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import maplibregl from 'maplibre-gl';
 import Link from 'next/link';
@@ -11,6 +11,8 @@ export default function MapClient(props: {
   setStationNav: (params: setStationsNavParams) => Promise<void>,
   setRoutesNav: (params: setRoutesNavParams) => Promise<void>
 }) {
+  const mapRef = React.useRef<MapRef>(null);
+
   React.useEffect(() => {
     maplibregl.addProtocol('custom', async (params) => {
       try {
@@ -24,21 +26,15 @@ export default function MapClient(props: {
     })
   }, []);
 
+  const onClick = React.useCallback((e: maplibregl.MapLayerMouseEvent) => onClickFunc(e, mapRef, props.setStationNav, props.setRoutesNav), [props]);
+
 
   return (
     <>
-      <Link href="/map/routes/1/1">Back to /map</Link>
-      <button onClick={() => props.setStationNav({station_id: 1})}>Log Map Load</button>
-      <React.Suspense fallback={<div>Loading Map...</div>}>
-        {/* <ActionForm /> */}
-        {/* <ClientRefresh /> */}
-        
-      </React.Suspense>
       <MapProvider>
         <Map
           id="map"
           initialViewState={{
-            // 35.68674602787891, 139.48947555916342
             longitude: 139.50,
             latitude: 35.69,
             zoom: 13
@@ -48,6 +44,8 @@ export default function MapClient(props: {
             height: 400
           }}
           mapStyle="https://raw.githubusercontent.com/gsi-cyberjapan/optimal_bvmap/52ba56f645334c979998b730477b2072c7418b94/style/std.json"
+          ref={mapRef}
+          onClick={onClick}
         >
           <Source {...patternSource}>
             <Layer {...patternLayerStyle} />
@@ -58,92 +56,40 @@ export default function MapClient(props: {
             <Layer {...stationLayerStyleStr} />
             <Layer {...stopLayerStyle} />
           </Source>
-          {/* <DrawControl
-            position="top-left"
-            displayControlsDefault={false}
-            controls={{
-              polygon: true,
-              trash: true
-            }}
-            // defaultMode="draw_polygon"
-            // onCreate={onUpdate}
-            // onUpdate={onUpdate}
-            // onDelete={onDelete}
-          /> */}
-          <Navigation
-            setStationNav={props.setStationNav}
-            setRoutesNav={props.setRoutesNav}
-          />
         </Map>
-        
-
       </MapProvider>
-      
     </>
-    
   );
 }
 
-function Navigation(props: {
+
+
+const onClickFunc = (
+  e: maplibregl.MapMouseEvent,
+  mapRef: React.RefObject<MapRef | null>,
   setStationNav: (params: setStationsNavParams) => Promise<void>,
-  setRoutesNav: (params: setRoutesNavParams) => Promise<void>
-}) {
-  
-  // console.log(map);
-  const {map}  = useMap();
-
-  React.useEffect(() => {
-    console.log('mapload');
-    if (!map) return;
-    const onClick = (e: maplibregl.MapMouseEvent) => {
-      const features = map.queryRenderedFeatures(e.point, { layers: ['patternLayer', 'stationLayer'] });
-      console.log(features);
-      if (features && features.length > 0) {
-        const feature = features[0];
-        switch (feature.sourceLayer) {
-          case 'stationLayer':
-            console.log('station clicked:', feature);
-            props.setStationNav({station_id: Number(feature.properties?.station_id)});
-            break;
-          case 'patternLayer':
-            console.log('pattern clicked:', feature);
-            props.setRoutesNav({
-              feed_id: Number(feature.properties?.feed_id),
-              route_id: String(feature.properties?.route_id)
-            });
-            break;
-        }
-      }
-    };
-    map.on('click', onClick);
-    return () => {
-      map.off('click', onClick);
+  setRoutesNav: (params: setRoutesNavParams) => Promise<void>,
+) => {
+  if (!mapRef.current) return;
+  const map = mapRef.current.getMap();
+  const features = map.queryRenderedFeatures(e.point, { layers: ['patternLayer', 'stationLayer'] });
+  console.log(features);
+  if (features && features.length > 0) {
+    const feature = features[0];
+    switch (feature.sourceLayer) {
+      case 'stationLayer':
+        console.log('station clicked:', feature);
+        setStationNav({station_id: Number(feature.properties?.station_id)});
+        break;
+      case 'patternLayer':
+        console.log('pattern clicked:', feature);
+        setRoutesNav({
+          feed_id: Number(feature.properties?.feed_id),
+          route_id: String(feature.properties?.route_id),
+          station_id: feature.properties?.station_id ? Number(feature.properties?.station_id) : undefined,
+          next_station_id: feature.properties?.next_station_id ? Number(feature.properties?.next_station_id) : undefined,
+        });
+        break;
     }
-  }, [map, props]);
-
-  
-
-  
-
-  return (
-    <>
-    </>
-  )
-}
-
-
-// function DrawControl(props: {
-//   position: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right',
-//   displayControlsDefault?: boolean,
-//   controls: {
-//     polygon?: boolean,
-//     trash?: boolean,
-//   },
-//   onCreate?: (e: unknown) => void,
-//   onUpdate?: (e: unknown) => void,
-//   onDelete?: (e: unknown) => void,
-// }) {
-//   console.log(props.onCreate)
-
-//   return null;
-// }
+  }
+};

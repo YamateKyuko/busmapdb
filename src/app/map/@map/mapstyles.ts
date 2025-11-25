@@ -61,7 +61,7 @@ export const stationLayerStyle: LayerProps = {
   type: "fill",
   source: "stationSource",
   "source-layer": "stationLayer",
-  filter: ['==', ['get', 'type'], 'station'],
+  // filter: ['==', ['get', 'type'], 'station'],
   layout: {},
   paint: {
     "fill-color": "#888888",

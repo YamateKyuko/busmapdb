@@ -8,7 +8,9 @@ export type setStationsNavParams = {
 
 export type setRoutesNavParams = {
   feed_id: number,
-  route_id: string
+  route_id: string,
+  station_id?: number,
+  next_station_id?: number
 };
 
 function MapComponent() {
@@ -23,7 +25,20 @@ function MapComponent() {
     'use server';
     console.log('mapload');
     revalidatePath('/map/@map');
-    redirect(`/map/routes/${params.feed_id}/${params.route_id}`, RedirectType.push);
+    redirect(
+      `/map/routes/${
+        encodeURIComponent(params.feed_id)
+      }/${
+        encodeURIComponent(params.route_id)
+      }${
+        (params.station_id && params.next_station_id) &&
+          `?station_id=${
+            encodeURIComponent(params.station_id)
+          }&next_station_id=${
+            encodeURIComponent(params.next_station_id)
+      }`}`,
+      RedirectType.push
+    );
   };
 
   return (

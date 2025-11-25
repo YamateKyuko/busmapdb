@@ -42,7 +42,9 @@ export async function GET(_req: Request, ctx: RouteContext<'/api/map/patterns/[.
         feed_id,
         route_id,
         patterns,
-        route_name
+        route_name,
+        station_id,
+        next_station_id
 
       FROM busmap.maproutes, bbox
       WHERE geom && st_transform(bbox.b, 4326)
