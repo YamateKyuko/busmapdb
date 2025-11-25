@@ -46,7 +46,15 @@ select
   array_agg(pattern_id),
   st_linemerge(st_collect(geom)) as geom,
   station_id,
-  next_station_id
+  next_station_id,
+  st_point(p.station_lon, p.station_lat) as station_geom,
+  st_point(np.station_lon, np.station_lat) as next_station_geom
   -- null as thickness
 from m
-group by feed_id,route_id, route_name, station_id, next_station_id;
+inner join parent_stations as p on p.station_id = m.station_id
+inner join parent_stations as np on np.station_id = m.next_station_id
+group by feed_id, route_id, route_name, station_id, next_station_id;
+
+
+select st_linesubstring(geom,0,0.5);
+
