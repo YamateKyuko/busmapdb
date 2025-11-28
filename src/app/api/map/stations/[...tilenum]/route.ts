@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
 import { Client } from 'pg';
 
-export const dynamic = 'force-static'
-
 export async function GET(_req: Request, ctx: RouteContext<'/api/map/stations/[...tilenum]'>) {
   const tilenumstrs = (await ctx.params).tilenum;
   const tilenums: number[] = [];
@@ -25,15 +23,14 @@ export async function GET(_req: Request, ctx: RouteContext<'/api/map/stations/[.
     with bbox as (select st_transform(ST_TileEnvelope($1, $2, $3), 3857) as b),
     q as (
       SELECT
-        ST_AsMVTGeom(st_transform(geom, 3857), bbox.b),
-        'station' as type,
+        ST_AsMVTGeom(st_transform(geom, 3857), bbox.b) as geom,
         station_id,
         station_name
-      FROM busmap.mapstations, bbox
+      FROM (select geom, station_id, station_name from busmap.mapstations), bbox
       WHERE geom && st_transform(bbox.b, 4326)
     )
     SELECT
-      ST_AsMVT(q, 'stationLayer') as st_asmvt
+      ST_AsMVT(q, 'stationLayer', 4096, 'geom', null) as st_asmvt
     FROM q;
   `, [z, x, y]);
 

@@ -1,21 +1,27 @@
 'use client';
 import * as React from 'react';
-import Map, { Layer, MapProvider, MapRef, Source, useMap } from 'react-map-gl/maplibre';
+import Map, { Layer, MapRef, Source } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import maplibregl from 'maplibre-gl';
-import Link from 'next/link';
-import { setRoutesNavParams, setStationsNavParams } from './mapComponent';
-import { patternLayerStyle, patternLayerStyleStr, patternSource, stationLayerStyle, stationLayerStyleStr, stationSource, stopLayerStyle } from './mapstyles';
+import maplibregl, { FilterSpecification } from 'maplibre-gl';
+import { setNavFunc, setRoutesNavParams, setStationsNavParams } from './mapComponent';
+import { patternGeomLayerStyle, patternStrLayerStyle, patternSource, stationGeomLayerStyle, highlightedStationGeomLayerStyle, stationStrLayerStyle, stationSource, highlightedPatternGeomLayerStyle } from './mapstyles';
+import styles from './map.module.css';
 
 export default function MapClient(props: {
-  setStationNav: (params: setStationsNavParams) => Promise<void>,
-  setRoutesNav: (params: setRoutesNavParams) => Promise<void>
+  setNav: setNavFunc
 }) {
   const mapRef = React.useRef<MapRef>(null);
-
+  // type a = maplibregl.AddProtocolAction;
+  // type b = maplibregl.GetResourceResponse<any>;
   React.useEffect(() => {
     maplibregl.addProtocol('custom', async (params) => {
       try {
+        if (params.url == 'custom://pale.json') {
+          const t = await fetch(`/pale.json`);
+          const json = await t.json();
+          console.log(json);
+          return {data: json};
+        }
         const url = params.url.replace('custom://api/', '');
         const t = await fetch(`/api/${url}`);
         const buffer = await t.arrayBuffer();
@@ -26,38 +32,70 @@ export default function MapClient(props: {
     })
   }, []);
 
-  const onClick = React.useCallback((e: maplibregl.MapLayerMouseEvent) => onClickFunc(e, mapRef, props.setStationNav, props.setRoutesNav), [props]);
+  const [clickedFeature, setClickedFeature] = React.useState<setStationsNavParams | setRoutesNavParams | null>(null);
+  const stationFilter: FilterSpecification | undefined = React.useMemo(
+    () => clickedFeature?.type === 'station'
+      ? ['==', 'station_id', clickedFeature.station_id]
+      : undefined,
+    [clickedFeature]);
 
+  const routeFilter: FilterSpecification | undefined = React.useMemo(
+    () => clickedFeature?.type === 'route'
+      ? ['all',
+        ['==', 'feed_id', clickedFeature.feed_id],
+        ['==', 'route_id', clickedFeature.route_id],
+        ['==', 'station_id', clickedFeature.station_id],
+        ['==', 'next_station_id', clickedFeature.next_station_id]
+      ]
+      : undefined,
+    [clickedFeature]);
+    
+
+  const setClicked = React.useCallback(async (feature: setStationsNavParams | setRoutesNavParams) => {
+    
+    props.setNav(feature);
+    setClickedFeature(feature);
+    
+  }, [props]);
+
+  const onClick = React.useCallback((e: maplibregl.MapLayerMouseEvent) => onClickFunc(
+    e,
+    setClicked,
+    // setClickedFeature
+  ), [setClicked]);
 
   return (
     <>
-      <MapProvider>
+      <div className={styles.map}>
         <Map
           id="map"
+          
           initialViewState={{
             longitude: 139.50,
             latitude: 35.69,
             zoom: 13
           }}
-          style={{
-            width: 800,
-            height: 400
-          }}
-          mapStyle="https://raw.githubusercontent.com/gsi-cyberjapan/optimal_bvmap/52ba56f645334c979998b730477b2072c7418b94/style/std.json"
+          
+          mapStyle='custom://pale.json'
           ref={mapRef}
           onClick={onClick}
+          interactiveLayerIds={['patternGeomLayer', 'stationGeomLayer']} // 消すな
+          
         >
+          
           <Source {...patternSource}>
-            <Layer {...patternLayerStyle} />
-            <Layer {...patternLayerStyleStr} />
+            <Layer {...patternGeomLayerStyle} />
+            {routeFilter && <Layer beforeId='patternStrLayer' {...{...highlightedPatternGeomLayerStyle, filter: routeFilter}} />}
+            <Layer {...patternStrLayerStyle} />
           </Source>
           <Source {...stationSource}>
-            <Layer {...stationLayerStyle} />
-            <Layer {...stationLayerStyleStr} />
-            <Layer {...stopLayerStyle} />
+            <Layer {...stationGeomLayerStyle} />
+            {stationFilter && <Layer beforeId='stationStrLayer' {...{...highlightedStationGeomLayerStyle, filter: stationFilter}} />}
+            <Layer {...stationStrLayerStyle} />
+            {/* <Layer {...stopLayerStyle} /> */}
           </Source>
         </Map>
-      </MapProvider>
+      </div>
     </>
   );
 }
@@ -65,29 +103,28 @@ export default function MapClient(props: {
 
 
 const onClickFunc = (
-  e: maplibregl.MapMouseEvent,
-  mapRef: React.RefObject<MapRef | null>,
-  setStationNav: (params: setStationsNavParams) => Promise<void>,
-  setRoutesNav: (params: setRoutesNavParams) => Promise<void>,
+  e: maplibregl.MapLayerMouseEvent,
+  setClicked: setNavFunc
 ) => {
-  if (!mapRef.current) return;
-  const map = mapRef.current.getMap();
-  const features = map.queryRenderedFeatures(e.point, { layers: ['patternLayer', 'stationLayer'] });
-  console.log(features);
+  const features = e.features;
   if (features && features.length > 0) {
     const feature = features[0];
     switch (feature.sourceLayer) {
       case 'stationLayer':
         console.log('station clicked:', feature);
-        setStationNav({station_id: Number(feature.properties?.station_id)});
+        setClicked({
+          type: 'station',
+          station_id: Number(feature.properties.station_id),
+        });
         break;
       case 'patternLayer':
         console.log('pattern clicked:', feature);
-        setRoutesNav({
+        setClicked({
+          type: 'route',
           feed_id: Number(feature.properties?.feed_id),
           route_id: String(feature.properties?.route_id),
-          station_id: feature.properties?.station_id ? Number(feature.properties?.station_id) : undefined,
-          next_station_id: feature.properties?.next_station_id ? Number(feature.properties?.next_station_id) : undefined,
+          station_id: Number(feature.properties?.station_id),
+          next_station_id: Number(feature.properties?.next_station_id),
         });
         break;
     }

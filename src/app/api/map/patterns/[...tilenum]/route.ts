@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
 import { Client } from 'pg';
 
-export const dynamic = 'force-static'
-
 export async function GET(_req: Request, ctx: RouteContext<'/api/map/patterns/[...tilenum]'>) {
   const tilenumstrs = (await ctx.params).tilenum;
   const tilenums: number[] = [];

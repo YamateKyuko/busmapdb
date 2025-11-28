@@ -1,6 +1,6 @@
 function Page() {
   return (
-    <>page</>
+    <></>
   );
 };
 

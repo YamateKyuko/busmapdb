@@ -1,22 +1,22 @@
-import { LayerProps, SourceProps } from "react-map-gl/maplibre"
+import { LayerProps, SourceProps } from 'react-map-gl/maplibre'
 
 export const patternSource: SourceProps = {
-  id: "patternSource",
-  type: "vector",
+  id: 'patternSource',
+  type: 'vector',
   tiles: [`custom://api/map/patterns/{z}/{x}/{y}`],
   minzoom: 0,
   maxzoom: 14,
 }
 
-export const patternLayerStyle: LayerProps = {
-  id: "patternLayer",
-  type: "line",
-  source: "patternSource",
-  "source-layer": "patternLayer",
+export const patternGeomLayerStyle: LayerProps = {
+  id: 'patternGeomLayer',
+  type: 'line',
+  source: 'patternSource',
+  'source-layer': 'patternLayer',
   layout: {},
   paint: {
-    "line-color": "#2d2d70",
-    "line-width": [
+    'line-color': '#2d2d70',
+    'line-width': [
             'interpolate',
             ['linear'],
             ['zoom'],
@@ -26,14 +26,32 @@ export const patternLayerStyle: LayerProps = {
   },
 }
 
-export const patternLayerStyleStr: LayerProps = {
-  id: "patternLayerStr",
-  type: "symbol",
-  source: "patternSource",
-  "source-layer": "patternLayer",
+export const highlightedPatternGeomLayerStyle: LayerProps = {
+  id: 'highlightedPatternGeomLayer',
+  type: 'line',
+  source: 'patternSource',
+  'source-layer': 'patternLayer',
+  layout: {},
+  paint: {
+    'line-color': '#ff0000',
+    'line-width': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            2,
+            5,
+        ],
+  },
+}
+
+export const patternStrLayerStyle: LayerProps = {
+  id: 'patternStrLayer',
+  type: 'symbol',
+  source: 'patternSource',
+  'source-layer': 'patternLayer',
     'layout': {
       'icon-image': '', //アイコン画像は使わない
-      'text-font': ["NotoSans-SemiBold"], //文字フォントの指定
+      'text-font': ['NotoSansCJKjp-Regular'], //文字フォントの指定
       'text-anchor': 'top', //テキスト表示位置の指定
       'text-allow-overlap': true, //テキストが重なっても表示する
       'text-size': 7, //テキストサイズの指定
@@ -49,62 +67,76 @@ export const patternLayerStyleStr: LayerProps = {
 }
 
 export const stationSource: SourceProps = {
-  id: "stationSource",
-  type: "vector",
+  id: 'stationSource',
+  type: 'vector',
   tiles: [`custom://api/map/stations/{z}/{x}/{y}`],
   minzoom: 0,
   maxzoom: 14,
 }
 
-export const stationLayerStyle: LayerProps = {
-  id: "stationLayer",
-  type: "fill",
-  source: "stationSource",
-  "source-layer": "stationLayer",
-  // filter: ['==', ['get', 'type'], 'station'],
+export const stationGeomLayerStyle: LayerProps = {
+  id: 'stationGeomLayer',
+  type: 'fill',
+  source: 'stationSource',
+  'source-layer': 'stationLayer',
   layout: {},
   paint: {
-    "fill-color": "#888888",
-    "fill-outline-color": "#000000",
-    "fill-opacity": 1,
+    'fill-color': '#888888',
+    'fill-outline-color': '#000000',
+    'fill-opacity': 1,
   },
 }
 
-export const stationLayerStyleStr: LayerProps = {
-  id: "stationLayerStr",
-  type: "symbol",
-  source: "stationSource",
-  "source-layer": "stationLayer",
-  'filter': ['==', ['get', 'type'], 'station'],
+export const highlightedStationGeomLayerStyle: LayerProps = {
+  id: 'highlightedStationGeomLayer',
+  type: 'fill',
+  source: 'stationSource',
+  'source-layer': 'stationLayer',
+  layout: {},
+  paint: {
+    'fill-color': '#ff0000',
+    'fill-outline-color': '#000000',
+    'fill-opacity': 1,
+  },
+}
+
+export const stationStrLayerStyle: LayerProps = {
+  id: 'stationStrLayer',
+  type: 'symbol',
+  source: 'stationSource',
+  'source-layer': 'stationLayer',
   'layout': {
-    'icon-image': '', //アイコン画像は使わない
-    'text-font': ["NotoSans-SemiBold"], //文字フォントの指定
-    'text-anchor': 'center', //テキスト表示位置の指定
-    'text-allow-overlap': true, //テキストが重なっても表示する
-    'text-size': 12, //テキストサイズの指定
-    // 'text-size': ['interpolate',['linear'],['zoom'],5,8,8,11,15,18], //テキストサイズはズームレベルに応じて指定
-    'text-offset': [0,0], //テキストのオフセットは無し
-    'text-field': ['get', 'station_name'], //テキスト表示する属性項目を指定（'{名称}'と記述してもOK）
+    'icon-image': '',
+    'text-font': ['NotoSansCJKjp-Regular'],
+    'text-anchor': 'center',
+    'text-allow-overlap': true,
+    'text-size': 12,
+    // 'text-size': ['interpolate',['linear'],['zoom'],5,8,8,11,15,18], 
+    'text-offset': [0,0],
+    'text-ignore-placement': true,
+    'text-overlap': 'always',
+    // 'text-field': '{station_name}',
+    'text-field': ['get', 'station_name'],
   },
   'paint':{
-    'text-color': '#555', //テキストの色指定
-    'text-halo-color': '#fff', //テキストの外縁の色指定
-    'text-halo-width': 1 //テキストの外縁の幅指定
+    'text-color': '#000',
+    'text-halo-color': '#fff',
+    'text-halo-width': 1
   }
 }
 
-export const stopLayerStyle: LayerProps = {
-  id: "stationLayer",
-  type: "circle",
-  source: "stationSource",
-  "source-layer": "stationLayer",
-  filter: ['==', ['get', 'type'], 'stop'],
-  layout: {},
-  paint: {
-    'circle-radius': 5,
-    'circle-color': '#ff0000',
-    // "fill-color": "#888888",
-    // "fill-outline-color": "#000000",
-    // "fill-opacity": 1,
-  },
-}
+// export const stopLayerStyle: LayerProps = {
+//   id: 'stationLayer',
+//   type: 'circle',
+//   source: 'stationSource',
+//   'source-layer': 'stationLayer',
+//   filter: ['==', ['get', 'type'], 'stop'],
+//   layout: {},
+//   paint: {
+//     'circle-radius': 5,
+//     'circle-color': '#ff0000',
+//     // 'fill-color': '#888888',
+//     // 'fill-outline-color': '#000000',
+//     // 'fill-opacity': 1,
+//   },
+// }

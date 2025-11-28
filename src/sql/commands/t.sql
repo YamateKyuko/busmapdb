@@ -1,60 +1,99 @@
-
-with ptns as (
-  select * from stop_patterns inner join stops using(feed_id, stop_id)
-),
-merged as (
-  select 
-    -- least(st_startpoint(geom), st_endpoint(geom)),
-    -- greatest(st_startpoint(geom), st_endpoint(geom)),
-    -- array_agg(pattern_id) as patterns,
-    results.feed_id,
-    results.route_id,
-    routes.route_name,
-    results.pattern_id,
-    p1.station_id,
-    p2.station_id as next_station_id,
-    geom
-  from map.results
-  inner join routes using(feed_id, route_id)
-  inner join ptns as p1 using(pattern_id, stop_sequence)
-  inner join ptns as p2 on (
-    p2.pattern_id = results.pattern_id and p2.stop_sequence = results.stop_sequence + 1
-  )
-  -- inner join stops as s1 using(feed_id, stop_id)
-  -- inner join stops as s2
-  -- group by feed_id, route_id, least, greatest, route_name
-),
-m as (
-  select 
-    st_makeline(
-      least(st_startpoint(geom), st_endpoint(geom)),
-      greatest(st_startpoint(geom), st_endpoint(geom))
-    ) as geom,
-    least(station_id, next_station_id) as station_id,
-    greatest(station_id, next_station_id) as next_station_id,
-    feed_id,
-    route_id,
-    route_name,
-    pattern_id
-  from merged
-  
-)
-select 
-  feed_id,
-  route_id,
-  route_name,
-  array_agg(pattern_id),
-  st_linemerge(st_collect(geom)) as geom,
-  station_id,
-  next_station_id,
-  st_point(p.station_lon, p.station_lat) as station_geom,
-  st_point(np.station_lon, np.station_lat) as next_station_geom
-  -- null as thickness
-from m
-inner join parent_stations as p on p.station_id = m.station_id
-inner join parent_stations as np on np.station_id = m.next_station_id
-group by feed_id, route_id, route_name, station_id, next_station_id;
+select *,
+-- substring(station_name, '[\u0000-\u00ff]')
+substring('a', '[\u0000-\u00ff]')
+from busmap.mapstations;
+-- delete from busmap.mapstations where station_id = 3022;
 
 
-select st_linesubstring(geom,0,0.5);
+
+-- with ptns as (
+--   select * from stop_patterns inner join stops using(feed_id, stop_id)
+-- ),
+-- merged as (
+--   select 
+--     results.feed_id,
+--     results.route_id,
+--     routes.route_name,
+--     results.pattern_id,
+--     p1.station_id,
+--     p2.station_id as next_station_id,
+--     geom
+--   from map.results
+--   inner join routes using(feed_id, route_id)
+--   inner join ptns as p1 using(pattern_id, stop_sequence)
+--   inner join ptns as p2 on (
+--     p2.pattern_id = results.pattern_id and p2.stop_sequence = results.stop_sequence + 1
+--   )
+-- ),
+-- m as (
+--   select 
+--     st_makeline(
+--       least(st_startpoint(geom), st_endpoint(geom)),
+--       greatest(st_startpoint(geom), st_endpoint(geom))
+--     ) as geom,
+--     least(station_id, next_station_id) as station_id,
+--     greatest(station_id, next_station_id) as next_station_id,
+--     feed_id,
+--     route_id,
+--     route_name,
+--     pattern_id
+--   from merged
+-- ),
+-- med as (
+--   select 
+--     feed_id,
+--     route_id,
+--     route_name,
+--     array_agg(pattern_id) as patterns,
+--     st_linemerge(st_collect(geom)) as geom,
+--     station_id,
+--     next_station_id
+--   from m
+--   group by feed_id, route_id, route_name, station_id, next_station_id
+-- ),
+-- jd as (
+--   select 
+--     feed_id,
+--     route_id,
+--     route_name,
+--     (st_dump(geom)).geom,
+--     m.station_id,
+--     next_station_id,
+--     st_point(p.station_lon, p.station_lat, 4326) as station_geom,
+--     st_point(np.station_lon, np.station_lat, 4326) as next_station_geom,
+--     patterns
+--   from med as m
+--   inner join parent_stations as p on p.station_id = m.station_id
+--   inner join parent_stations as np on np.station_id = m.next_station_id
+-- ),
+-- distb as (
+--   select
+--     *,
+--     case when st_distance(st_startpoint(geom), station_geom) >= st_distance(st_startpoint(geom), next_station_geom) then false else true end as b
+--   from jd
+-- )
+-- select 
+--   feed_id,
+--   route_id,
+--   route_name,
+--   st_linesubstring(geom, 0, 0.5),
+--   case b when true then station_id else next_station_id end as station_id,
+--   case b when true then next_station_id else station_id end as next_station_id,
+--   patterns
+-- from distb
+-- union all
+-- select 
+--   feed_id,
+--   route_id,
+--   route_name,
+--   st_linesubstring(geom, 0.5, 1),
+--   case b when true then next_station_id else station_id end as station_id,
+--   case b when true then station_id else next_station_id end as next_station_id,
+--   patterns
+-- from distb
+-- ;
+-- group by feed_id, route_id, route_name, m.station_id, next_station_id;
+
+
+-- select st_linesubstring(geom,0,0.5);
 
