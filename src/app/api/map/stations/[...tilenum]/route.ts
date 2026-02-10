@@ -20,14 +20,17 @@ export async function GET(_req: Request, ctx: RouteContext<'/api/map/stations/[.
   await client.connect();
 
   const res = await client.query(`
-    with bbox as (select st_transform(ST_TileEnvelope($1, $2, $3), 3857) as b),
+    with bbox as (select st_transform(ST_TileEnvelope($1, $2, $3), 3857) as b, '平' as daytype),
     q as (
       SELECT
-        ST_AsMVTGeom(st_transform(geom, 3857), bbox.b) as geom,
+        ST_AsMVTGeom(st_transform(station_geom, 3857), bbox.b) as geom,
         station_id,
-        station_name
-      FROM (select geom, station_id, station_name from busmap.mapstations), bbox
-      WHERE geom && st_transform(bbox.b, 4326)
+        station_name,
+        count
+      FROM busmap.mapstations
+      join bbox on true
+      inner join busmap.mapstationcount using (station_id, daytype)
+      WHERE busmap.mapstations.station_geom && st_transform(bbox.b, 4326)
     )
     SELECT
       ST_AsMVT(q, 'stationLayer', 4096, 'geom', null) as st_asmvt
@@ -37,6 +40,7 @@ export async function GET(_req: Request, ctx: RouteContext<'/api/map/stations/[.
   await client.end();
 
   const tile = res.rows[0].st_asmvt;
+  console.log(`station tile size: ${tile.length} bytes`);
 
   return new NextResponse(tile, {
     headers: {

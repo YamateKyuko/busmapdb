@@ -4,7 +4,7 @@ import Map, { Layer, MapRef, Source } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import maplibregl, { FilterSpecification } from 'maplibre-gl';
 import { setNavFunc, setRoutesNavParams, setStationsNavParams } from './mapComponent';
-import { patternGeomLayerStyle, patternStrLayerStyle, patternSource, stationGeomLayerStyle, highlightedStationGeomLayerStyle, stationStrLayerStyle, stationSource, highlightedPatternGeomLayerStyle } from './mapstyles';
+import { patternGeomLayerStyle, patternSource, stationGeomLayerStyle, highlightedStationGeomLayerStyle, stationStrLayerStyle, stationSource, highlightedPatternGeomLayerStyle } from './mapstyles';
 import styles from './map.module.css';
 
 export default function MapClient(props: {
@@ -85,13 +85,14 @@ export default function MapClient(props: {
           
           <Source {...patternSource}>
             <Layer {...patternGeomLayerStyle} />
-            {routeFilter && <Layer beforeId='patternStrLayer' {...{...highlightedPatternGeomLayerStyle, filter: routeFilter}} />}
-            <Layer {...patternStrLayerStyle} />
+            {/* {routeFilter && <Layer beforeId='patternStrLayer' {...{...highlightedPatternGeomLayerStyle, filter: routeFilter}} />} */}
+            {/* <Layer {...patternStrLayerStyle} /> */}
           </Source>
           <Source {...stationSource}>
             <Layer {...stationGeomLayerStyle} />
             {stationFilter && <Layer beforeId='stationStrLayer' {...{...highlightedStationGeomLayerStyle, filter: stationFilter}} />}
             <Layer {...stationStrLayerStyle} />
+
             {/* <Layer {...stopLayerStyle} /> */}
           </Source>
         </Map>
@@ -117,16 +118,16 @@ const onClickFunc = (
           station_id: Number(feature.properties.station_id),
         });
         break;
-      case 'patternLayer':
-        console.log('pattern clicked:', feature);
-        setClicked({
-          type: 'route',
-          feed_id: Number(feature.properties?.feed_id),
-          route_id: String(feature.properties?.route_id),
-          station_id: Number(feature.properties?.station_id),
-          next_station_id: Number(feature.properties?.next_station_id),
-        });
-        break;
+      // case 'patternLayer':
+      //   console.log('pattern clicked:', feature);
+      //   setClicked({
+      //     type: 'route',
+      //     feed_id: Number(feature.properties?.feed_id),
+      //     route_id: String(feature.properties?.route_id),
+      //     station_id: Number(feature.properties?.station_id),
+      //     next_station_id: Number(feature.properties?.next_station_id),
+      //   });
+      //   break;
     }
   }
 };

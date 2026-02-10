@@ -23,9 +23,10 @@ async function StationNav(props: {stationId: number}) {
   const stationId = props.stationId;
   const res = await stationsRequester.get({station_id: stationId});
   if (!res) return <div>Station not found</div>;
+  // console.log(res);
   return (
     <>
-      {res.stop_name}
+      {res.station_id}: {res.station_name}
     </>
   )
 }

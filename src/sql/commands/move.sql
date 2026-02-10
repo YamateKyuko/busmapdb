@@ -47,7 +47,7 @@ med as (
     route_id,
     route_name,
     array_agg(pattern_id) as patterns,
-    st_linemerge(st_collect(geom)) as geom,
+    st_collect(geom) as geom,
     station_id,
     next_station_id
   from m
@@ -58,7 +58,7 @@ jd as (
     feed_id,
     route_id,
     route_name,
-    (st_dump(geom)).geom,
+    (st_dump(geom)).geom as geom,
     m.station_id,
     next_station_id,
     st_point(p.station_lon, p.station_lat, 4326) as station_geom,
