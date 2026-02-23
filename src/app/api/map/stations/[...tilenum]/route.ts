@@ -16,7 +16,7 @@ export async function GET(_req: Request, ctx: RouteContext<'/api/map/stations/[.
   };
   const [z, x, y] = tilenums as [number, number, number];
 
-  const client = new Client(process.env.DATABASE_URL_LOCAL)
+  const client = new Client(process.env.DATABASE_LOCAL)
   await client.connect();
 
   const res = await client.query(`
