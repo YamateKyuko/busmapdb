@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { Client } from 'pg';
 
-export async function GET(req: Request, ctx: RouteContext<'/api/map/patterns/[...tilenum]'>) {
+export async function GET(req: Request, ctx: RouteContext<'/api/map/stationPaths/[...tilenum]'>) {
   const tilenumstrs = (await ctx.params).tilenum;
   const tilenums: number[] = [];
   tilenumstrs.forEach((v, i) => {
@@ -18,7 +18,7 @@ export async function GET(req: Request, ctx: RouteContext<'/api/map/patterns/[..
 
   const url = new URL(req.url);
   const searchparams = new URLSearchParams(url.search);
-  const stationid = searchparams.get('stations');
+  const stationid = searchparams.get('station_id');
 
   const client = new Client(process.env.DATABASE_URL);
   await client.connect();
@@ -33,11 +33,12 @@ export async function GET(req: Request, ctx: RouteContext<'/api/map/patterns/[..
   };
 
   const res = await client.query(`
-with bbox as (select st_transform(ST_TileEnvelope($1, $2, $3), 3857) as b),
+with bbox as (select st_transform(ST_TileEnvelope($1, $2, $3), 3857) as b, '平' as daytype),
 q as (
   SELECT
     ST_AsMVTGeom(st_transform(path_geom, 3857), bbox.b) as geom,
-    station_path_id
+    station_path_id,
+    daytype
   FROM busmap.mapstationpaths, bbox
   WHERE path_geom && st_transform(bbox.b, 4326)
 ),
@@ -45,13 +46,11 @@ r as (
   select 
     
     geom as geom,
-    station_path_id,
-    sum(count) as count,
+    q.station_path_id,
+    count,
     ${stationid !== null ? `'base'` : `'selected'`} as st
   from q
-  inner join busmap.mappatterns using(station_path_id)
-  inner join busmap.mappatterncount on (mappatterns.pattern_id = mappatterncount.pattern_id and daytype = '平')
-  group by station_path_id, geom
+  inner join busmap.mapstationpathcount using(station_path_id, daytype)
 ),
 ${stationid !== null ? `
 s as (
@@ -63,7 +62,7 @@ s as (
     'selected' as st
   from q
   inner join busmap.mappatterns using(station_path_id)
-  inner join busmap.mappatterncount on (mappatterns.pattern_id = mappatterncount.pattern_id and daytype = '平')
+  inner join busmap.mappatterncount using(pattern_id, daytype)
   where mappatterns.pattern_id in (
     select mappatterns.pattern_id
     from busmap.mapstationpaths
@@ -77,7 +76,7 @@ t as (
   select * from r${stationid !== null ? ' union all select * from s' : ''}
 )
 SELECT
-  ST_AsMVT(t.*, 'patternLayer', 4096, 'geom') as tile
+  ST_AsMVT(t.*, 'stationPathsLayer', 4096, 'geom') as tile
 FROM t;
   `, prepared);
 

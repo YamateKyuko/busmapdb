@@ -1,6 +1,6 @@
 drop schema if exists busmap cascade;
 create schema if not exists busmap;
-drop extension if exists postgis;
+-- drop extension if exists postgis;
 create extension if not exists postgis;
 
 -- select 
@@ -211,6 +211,39 @@ from b
 inner join busmap.mappatterncount using(pattern_id)
 group by station_id, daytype;
 
+drop table if exists busmap.mapstationpathcount;
+create table busmap.mapstationpathcount (
+  station_path_id integer not null,
+  daytype text not null,
+  count integer
+);
+
+insert into busmap.mapstationpathcount (station_path_id, daytype, count)
+select 
+  station_path_id,
+  daytype,
+  sum(count)
+from busmap.mappatterns
+inner join busmap.mapstationpaths using(station_path_id)
+inner join busmap.mappatterncount using(pattern_id)
+group by station_path_id, daytype;
+
+drop table if exists busmap.mapstoppathcount;
+create table busmap.mapstoppathcount (
+  stop_path_id integer not null,
+  daytype text not null,
+  count integer
+);
+
+insert into busmap.mapstoppathcount (stop_path_id, daytype, count)
+select 
+  stop_path_id,
+  daytype,
+  sum(count)
+from busmap.mappatterns
+inner join busmap.mapstoppaths using(stop_path_id)
+inner join busmap.mappatterncount using(pattern_id)
+group by stop_path_id, daytype;
 
 
 -- select

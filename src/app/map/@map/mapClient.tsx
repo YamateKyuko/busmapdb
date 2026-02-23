@@ -3,8 +3,8 @@ import * as React from 'react';
 import Map, { Layer, MapRef, Source } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import maplibregl, { FilterSpecification } from 'maplibre-gl';
-import { setNavFunc, setRoutesNavParams, setStationsNavParams } from './mapComponent';
-import { patternGeomLayerStyle, patternSource, stationGeomLayerStyle, highlightedStationGeomLayerStyle, stationStrLayerStyle, stationSource, highlightedPatternGeomLayerStyle, patternBaseGeomLayerStyle } from './mapstyles';
+import { setNavFunc, setNavParams, setRoutesNavParams, setStationsNavParams } from './mapComponent';
+import { stationPathsGeomLayerStyle, stationGeomLayerStyle, highlightedStationGeomLayerStyle, stationStrLayerStyle, stationSource, stationPathsBaseGeomLayerStyle } from './mapstyles';
 import styles from './map.module.css';
 import { usePathname } from 'next/navigation';
 
@@ -31,12 +31,12 @@ export default function MapClient(props: {
     })
   }, []);
 
-  const [clickedFeature, setClickedFeature] = React.useState<setStationsNavParams | setRoutesNavParams | null>(null);
-  const stationFilter: FilterSpecification | undefined = React.useMemo(
-    () => clickedFeature?.type === 'station'
-      ? ['==', 'station_id', clickedFeature.station_id]
-      : undefined,
-    [clickedFeature]);
+  // const [clickedFeature, setClickedFeature] = React.useState<setStationsNavParams | setRoutesNavParams | null>(null);
+  // const stationFilter: FilterSpecification | undefined = React.useMemo(
+  //   () => clickedFeature?.type === 'station'
+  //     ? ['==', 'station_id', clickedFeature.station_id]
+  //     : undefined,
+  //   [clickedFeature]);
 
   // const routeFilter: FilterSpecification | undefined = React.useMemo(
   //   () => clickedFeature?.type === 'route'
@@ -50,9 +50,9 @@ export default function MapClient(props: {
   //   [clickedFeature]);
     
 
-  const setClicked = React.useCallback(async (feature: setStationsNavParams | setRoutesNavParams) => {
+  const setClicked = React.useCallback(async (feature: setNavParams) => {
     props.setNav(feature);
-    setClickedFeature(feature);
+    // setClickedFeature(feature);
     
   }, [props]);
 
@@ -63,14 +63,15 @@ export default function MapClient(props: {
   // ), [setClicked]);
 
   const pathnames = usePathname().split('/');
-  const pathtype = pathnames[2] || null;
-  const pathval = pathnames[3] || null;
+  const highlightedType = pathnames[2] || null;
+  const hilightedValue = pathnames[3] || null;
+  
   // pathtype
 
   // const stationId = searchparams.get('station_id');
 
-  const [patternSourceTile, setPatternSourceTile] = React.useState<string>(
-    `custom://api/map/patterns/{z}/{x}/{y}${pathtype == 'stations' && pathval ? `?stations=${pathval}` : ''}`
+  const [stationPathsSourceTile, setStationPathsSourceTile] = React.useState<string>(
+    `custom://api/map/stationPaths/{z}/{x}/{y}${highlightedType == 'stations' && hilightedValue ? `?station_id=${hilightedValue}` : ''}`
   );
 
   const [stationSourceTile, setStationSourceTile] = React.useState<string>(
@@ -83,11 +84,23 @@ export default function MapClient(props: {
       const feature = features[0];
       switch (feature.sourceLayer) {
         case 'stationLayer':
-          setPatternSourceTile(`custom://api/map/patterns/{z}/{x}/{y}?stations=${feature.properties?.station_id}`);
-          setClicked({
-            type: 'station',
-            station_id: Number(feature.properties.station_id),
-          });
+          // console.log(`highlightedType: ${highlightedType}, highlightedValue: ${hilightedValue}`);
+          // // console.log(`clicked station with id ${feature.properties?.station_id}`);
+          // if (highlightedType == 'stations' && hilightedValue == String(feature.properties?.station_id)) {
+          //   console.log('clicked highlighted station, resetting to default');
+          //   setStationPathsSourceTile(`custom://api/map/stationPaths/{z}/{x}/{y}`);
+          //   setClicked({
+          //     type: 'default',
+          //   });
+          // } else {
+            setStationPathsSourceTile(`custom://api/map/stationPaths/{z}/{x}/{y}?station_id=${feature.properties?.station_id}`);
+            setClicked({
+              type: 'station',
+              station_id: Number(feature.properties.station_id),
+            });
+          // }
+          
+          
           break;
       }
     }
@@ -110,22 +123,20 @@ export default function MapClient(props: {
           mapStyle='custom://pale.json'
           ref={mapRef}
           onClick={onClick}
-          interactiveLayerIds={['patternGeomLayer', 'stationGeomLayer']} // 消すな
+          interactiveLayerIds={['stationPathsGeomLayer', 'stationGeomLayer']} // 消すな
           
         >
-          
-          {/* <Source {...patternSource}> */}
           <Source
-            id={'patternSource'}
+            id={'stationPathsSource'}
             type='vector'
             tiles={[
-              patternSourceTile
+              stationPathsSourceTile
             ]}
             minzoom={8}
             maxzoom={12}
           >
-            <Layer {...patternBaseGeomLayerStyle} />
-            <Layer {...patternGeomLayerStyle} />
+            <Layer {...stationPathsBaseGeomLayerStyle} />
+            <Layer {...stationPathsGeomLayerStyle} />
             
             {/* {routeFilter && <Layer beforeId='patternStrLayer' {...{...highlightedPatternGeomLayerStyle, filter: routeFilter}} />} */}
             {/* <Layer {...patternStrLayerStyle} /> */}
@@ -140,7 +151,7 @@ export default function MapClient(props: {
             maxzoom={12}     
           >
             <Layer {...stationGeomLayerStyle} />
-            {stationFilter && <Layer beforeId='stationStrLayer' {...{...highlightedStationGeomLayerStyle, filter: stationFilter}} />}
+            {/* {stationFilter && <Layer beforeId='stationStrLayer' {...{...highlightedStationGeomLayerStyle, filter: stationFilter}} />} */}
             <Layer {...stationStrLayerStyle} />
 
             {/* <Layer {...stopLayerStyle} /> */}

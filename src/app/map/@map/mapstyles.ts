@@ -1,22 +1,22 @@
 import { get } from 'http'
 import { LayerProps, SourceProps } from 'react-map-gl/maplibre'
 
-export const patternSource: SourceProps = {
-  id: 'patternSource',
-  type: 'vector',
-  tiles: [
+// export const patternSource: SourceProps = {
+//   id: 'patternSource',
+//   type: 'vector',
+//   tiles: [
     
-    `custom://api/map/patterns/{z}/{x}/{y}`
-  ],
-  minzoom: 0,
-  maxzoom: 14,
-}
+//     `custom://api/map/patterns/{z}/{x}/{y}`
+//   ],
+//   minzoom: 0,
+//   maxzoom: 14,
+// }
 
-export const patternGeomLayerStyle: LayerProps = {
-  id: 'patternGeomLayer',
+export const stationPathsGeomLayerStyle: LayerProps = {
+  id: 'stationPathsGeomLayer',
   type: 'line',
-  source: 'patternSource',
-  'source-layer': 'patternLayer',
+  source: 'stationPathsSource',
+  'source-layer': 'stationPathsLayer',
   filter: ['==', ['get', 'st'], 'selected'],
   layout: {
     'line-cap': 'round',
@@ -44,11 +44,11 @@ export const patternGeomLayerStyle: LayerProps = {
   },
 }
 
-export const patternBaseGeomLayerStyle: LayerProps = {
-  id: 'patternBaseGeomLayer',
+export const stationPathsBaseGeomLayerStyle: LayerProps = {
+  id: 'stationPathsBaseGeomLayer',
   type: 'line',
-  source: 'patternSource',
-  'source-layer': 'patternLayer',
+  source: 'stationPathsSource',
+  'source-layer': 'stationPathsLayer',
   filter: ['==', ['get', 'st'], 'base'],
   layout: {
     'line-cap': 'round',
@@ -71,23 +71,23 @@ export const patternBaseGeomLayerStyle: LayerProps = {
   },
 }
 
-export const highlightedPatternGeomLayerStyle: LayerProps = {
-  id: 'highlightedPatternGeomLayer',
-  type: 'line',
-  source: 'patternSource',
-  'source-layer': 'patternLayer',
-  layout: {},
-  paint: {
-    'line-color': '#ff0000',
-    'line-width': [
-            'interpolate',
-            ['linear'],
-            ['zoom'],
-            2,
-            5,
-        ],
-  },
-}
+// export const highlightedPatternGeomLayerStyle: LayerProps = {
+//   id: 'highlightedPatternGeomLayer',
+//   type: 'line',
+//   source: 'patternSource',
+//   'source-layer': 'patternLayer',
+//   layout: {},
+//   paint: {
+//     'line-color': '#ff0000',
+//     'line-width': [
+//             'interpolate',
+//             ['linear'],
+//             ['zoom'],
+//             2,
+//             5,
+//         ],
+//   },
+// }
 
 // export const patternStrLayerStyle: LayerProps = {
 //   id: 'patternStrLayer',
