@@ -26,7 +26,7 @@ export async function GET(req: Request, ctx: RouteContext<'/api/map/patterns/[..
   // console.log('stationid:', stationid);
   // console.log('stationid:', stationid);
 
-  const client = new Client(process.env.DATABASE_URL_LOCAL)
+  const client = new Client(process.env.DATABASE_URL);
   await client.connect();
 
   // const res = await client.query(`
