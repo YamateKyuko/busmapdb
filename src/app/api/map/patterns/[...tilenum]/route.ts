@@ -16,31 +16,12 @@ export async function GET(req: Request, ctx: RouteContext<'/api/map/patterns/[..
   };
   const [z, x, y] = tilenums as [number, number, number];
 
-  // await (ctx.params)
-
-  // console.log(req.searchParams);
   const url = new URL(req.url);
   const searchparams = new URLSearchParams(url.search);
   const stationid = searchparams.get('stations');
-  // console.log(searchparams.toString());
-  // console.log('stationid:', stationid);
-  // console.log('stationid:', stationid);
 
   const client = new Client(process.env.DATABASE_URL);
   await client.connect();
-
-  // const res = await client.query(`
-  //   with bbox as (select st_transform(ST_TileEnvelope($1, $2, $3), 3857) as b)
-  //   SELECT
-  //     ST_AsMVT(q, 'mvt_polygons')
-  //   FROM (
-  //     SELECT
-  //       ST_AsMVTGeom(st_transform(geom, 3857), bbox.b),
-  //       geom
-  //     FROM busmap.maproutes, bbox
-  //     WHERE geom && st_transform(bbox.b, 4326)
-  //   ) q;
-  // `, [z, x, y]);
 
   const prepared: (string | number)[] = [z,x,y];
   if (stationid) {
