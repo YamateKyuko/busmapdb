@@ -4,7 +4,7 @@ import { Client } from 'pg';
 export async function GET(req: Request, ctx: RouteContext<'/api/map/patterns/[...tilenum]'>) {
   const tilenumstrs = (await ctx.params).tilenum;
   const tilenums: number[] = [];
-  tilenumstrs.map((v, i) => {
+  tilenumstrs.forEach((v, i) => {
     const num = Number(v);
     if (isNaN(num) || num < 0 || i > 3) {
       return new Response('Bad Request', { status: 400 });
@@ -23,10 +23,14 @@ export async function GET(req: Request, ctx: RouteContext<'/api/map/patterns/[..
   const client = new Client(process.env.DATABASE_URL);
   await client.connect();
 
-  const prepared: (string | number)[] = [z,x,y];
-  if (stationid) {
-    prepared.push(stationid);
-  }
+  const prepared: (number)[] = [z,x,y];
+  if (stationid !== null) {
+    const sid = Number(stationid);
+    if (isNaN(sid) || sid < 0) {
+      return new Response('Bad Request', { status: 400 });
+    }
+    prepared.push(sid);
+  };
 
   const res = await client.query(`
 with bbox as (select st_transform(ST_TileEnvelope($1, $2, $3), 3857) as b),
@@ -79,7 +83,7 @@ FROM t;
 
 
 
-  await client.end()
+  await client.end();
 
   const tile = res.rows[0].tile;
   // console.log(res.rows.length);

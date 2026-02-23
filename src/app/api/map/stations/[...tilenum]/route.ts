@@ -4,7 +4,7 @@ import { Client } from 'pg';
 export async function GET(_req: Request, ctx: RouteContext<'/api/map/stations/[...tilenum]'>) {
   const tilenumstrs = (await ctx.params).tilenum;
   const tilenums: number[] = [];
-  tilenumstrs.map((v, i) => {
+  tilenumstrs.forEach((v, i) => {
     const num = Number(v);
     if (isNaN(num) || num < 0 || i > 3) {
       return new Response('Bad Request', { status: 400 });
