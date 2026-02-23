@@ -35,6 +35,10 @@ export type station = {
     'stop_sequence': number,
     'direction_id': '0' | '1',
     'route_name': string,
+    'stop_headsign': string,
+    'platform_code': string,
+    'zone_id': string,
+    'first_stop_name': string,
     
   }[]
 };

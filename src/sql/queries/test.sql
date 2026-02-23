@@ -1,0 +1,43 @@
+-- with bbox as (select st_transform(ST_TileEnvelope(1,0,0), 3857) as b),
+-- q as (
+--   SELECT
+--     ST_AsMVTGeom(st_transform(path_geom, 3857), bbox.b) as geom,
+--     station_path_id
+--   FROM busmap.mapstationpaths, bbox
+--   WHERE path_geom && st_transform(bbox.b, 4326)
+-- ),
+-- r as (
+--   select 
+--     geom,
+--     station_path_id,
+--     sum(count) as count
+--   from q
+--   inner join busmap.mappatterns using(station_path_id)
+--   inner join busmap.mappatterncount on (mappatterns.pattern_id = mappatterncount.pattern_id and daytype = '平')
+--   where mappatterns.pattern_id in (
+--     select mappatterns.pattern_id
+--     from busmap.mapstationpaths
+--     inner join busmap.mappatterns using(station_path_id)
+--     where sta1 = 100 or sta2 = 100
+--     group by pattern_id)
+--   group by station_path_id, geom
+-- )
+-- SELECT
+--   ST_AsMVT(r, 'patternLayer') as tile
+-- FROM r;
+
+    -- with bbox as (select st_transform(ST_TileEnvelope($1, $2, $3), 3857) as b, '平' as daytype),
+    -- q as (
+    --   SELECT
+    --     ST_AsMVTGeom(st_transform(station_geom, 3857), bbox.b) as geom,
+    --     station_id,
+    --     station_name,
+    --     count
+    --   FROM busmap.mapstations
+    --   join bbox on true
+    --   inner join busmap.mapstationcount using (station_id, daytype)
+    --   WHERE busmap.mapstations.station_geom && st_transform(bbox.b, 4326)
+    -- )
+    -- SELECT
+    --   ST_AsMVT(q, 'stationLayer', 4096, 'geom', null) as st_asmvt
+    -- FROM q;

@@ -27,6 +27,13 @@ async function StationNav(props: {stationId: number}) {
   return (
     <>
       {res.station_id}: {res.station_name}
+      {res.stop_patterns.map((pattern, i) => (
+        <p key={`${pattern.pattern_id}_${i}`}>
+          <span>{pattern.platform_code}</span>
+          <span>{pattern.route_name}</span>
+          {pattern.stop_headsign}
+        </p>
+      ))}
     </>
   )
 }

@@ -4,7 +4,10 @@ import { LayerProps, SourceProps } from 'react-map-gl/maplibre'
 export const patternSource: SourceProps = {
   id: 'patternSource',
   type: 'vector',
-  tiles: [`custom://api/map/patterns/{z}/{x}/{y}`],
+  tiles: [
+    
+    `custom://api/map/patterns/{z}/{x}/{y}`
+  ],
   minzoom: 0,
   maxzoom: 14,
 }
@@ -14,6 +17,7 @@ export const patternGeomLayerStyle: LayerProps = {
   type: 'line',
   source: 'patternSource',
   'source-layer': 'patternLayer',
+  filter: ['==', ['get', 'st'], 'selected'],
   layout: {
     'line-cap': 'round',
     'line-sort-key': ['-', ['get', 'count']],
@@ -25,6 +29,33 @@ export const patternGeomLayerStyle: LayerProps = {
       ['max', ['-', 255, ['*', ['log2', ['*', ['get', 'count'], 1]], 20]], 0],
       0
     ],
+    // 'line-width': ['/', ['get', 'count'], 10],
+    // 'line-blur': 2,
+    
+    'line-width': [
+      'interpolate',
+      ['linear'],
+      ['zoom'],
+      2,
+      ['/', ['log2', ['*', ['get', 'count'], 2]], 10],
+      15,
+      ['/', ['log2', ['*', ['get', 'count'], 2]], 1],
+    ],
+  },
+}
+
+export const patternBaseGeomLayerStyle: LayerProps = {
+  id: 'patternBaseGeomLayer',
+  type: 'line',
+  source: 'patternSource',
+  'source-layer': 'patternLayer',
+  filter: ['==', ['get', 'st'], 'base'],
+  layout: {
+    'line-cap': 'round',
+    'line-sort-key': ['-', ['get', 'count']],
+  },
+  paint: {
+    'line-color': '#888888',
     // 'line-width': ['/', ['get', 'count'], 10],
     // 'line-blur': 2,
     
@@ -105,6 +136,7 @@ export const stationGeomLayerStyle: LayerProps = {
       ['/', ['log2', ['*', ['get', 'count'], 2]], 1],
     ],
     'circle-color': '#008000',
+
     // ''
     // 'fill-color': '#888888',
     // 'fill-outline-color': '#000000',

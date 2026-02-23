@@ -4,25 +4,24 @@ import Map, { Layer, MapRef, Source } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import maplibregl, { FilterSpecification } from 'maplibre-gl';
 import { setNavFunc, setRoutesNavParams, setStationsNavParams } from './mapComponent';
-import { patternGeomLayerStyle, patternSource, stationGeomLayerStyle, highlightedStationGeomLayerStyle, stationStrLayerStyle, stationSource, highlightedPatternGeomLayerStyle } from './mapstyles';
+import { patternGeomLayerStyle, patternSource, stationGeomLayerStyle, highlightedStationGeomLayerStyle, stationStrLayerStyle, stationSource, highlightedPatternGeomLayerStyle, patternBaseGeomLayerStyle } from './mapstyles';
 import styles from './map.module.css';
+import { usePathname } from 'next/navigation';
 
 export default function MapClient(props: {
   setNav: setNavFunc
 }) {
   const mapRef = React.useRef<MapRef>(null);
-  // type a = maplibregl.AddProtocolAction;
-  // type b = maplibregl.GetResourceResponse<any>;
+  
   React.useEffect(() => {
-    maplibregl.addProtocol('custom', async (params) => {
+    maplibregl.addProtocol('custom', async (requestParam) => {
       try {
-        if (params.url == 'custom://pale.json') {
+        if (requestParam.url == 'custom://pale.json') {
           const t = await fetch(`/pale.json`);
           const json = await t.json();
-          console.log(json);
           return {data: json};
         }
-        const url = params.url.replace('custom://api/', '');
+        const url = requestParam.url.replace('custom://api/', '');
         const t = await fetch(`/api/${url}`);
         const buffer = await t.arrayBuffer();
         return {data: buffer}
@@ -39,30 +38,62 @@ export default function MapClient(props: {
       : undefined,
     [clickedFeature]);
 
-  const routeFilter: FilterSpecification | undefined = React.useMemo(
-    () => clickedFeature?.type === 'route'
-      ? ['all',
-        ['==', 'feed_id', clickedFeature.feed_id],
-        ['==', 'route_id', clickedFeature.route_id],
-        ['==', 'station_id', clickedFeature.station_id],
-        ['==', 'next_station_id', clickedFeature.next_station_id]
-      ]
-      : undefined,
-    [clickedFeature]);
+  // const routeFilter: FilterSpecification | undefined = React.useMemo(
+  //   () => clickedFeature?.type === 'route'
+  //     ? ['all',
+  //       ['==', 'feed_id', clickedFeature.feed_id],
+  //       ['==', 'route_id', clickedFeature.route_id],
+  //       ['==', 'station_id', clickedFeature.station_id],
+  //       ['==', 'next_station_id', clickedFeature.next_station_id]
+  //     ]
+  //     : undefined,
+  //   [clickedFeature]);
     
 
   const setClicked = React.useCallback(async (feature: setStationsNavParams | setRoutesNavParams) => {
-    
     props.setNav(feature);
     setClickedFeature(feature);
     
   }, [props]);
 
-  const onClick = React.useCallback((e: maplibregl.MapLayerMouseEvent) => onClickFunc(
-    e,
-    setClicked,
-    // setClickedFeature
-  ), [setClicked]);
+  // const onClick = React.useCallback((e: maplibregl.MapLayerMouseEvent) => onClickFunc(
+  //   e,
+  //   setClicked,
+  //   // setClickedFeature
+  // ), [setClicked]);
+
+  const pathnames = usePathname().split('/');
+  const pathtype = pathnames[2] || null;
+  const pathval = pathnames[3] || null;
+  // pathtype
+
+  // const stationId = searchparams.get('station_id');
+
+  const [patternSourceTile, setPatternSourceTile] = React.useState<string>(
+    `custom://api/map/patterns/{z}/{x}/{y}${pathtype == 'stations' && pathval ? `?stations=${pathval}` : ''}`
+  );
+
+  const [stationSourceTile, setStationSourceTile] = React.useState<string>(
+    `custom://api/map/stations/{z}/{x}/{y}`
+  );
+
+  const onClick = React.useCallback((e: maplibregl.MapLayerMouseEvent) => {
+    const features = e.features;
+    if (features && features.length > 0) {
+      const feature = features[0];
+      switch (feature.sourceLayer) {
+        case 'stationLayer':
+          setPatternSourceTile(`custom://api/map/patterns/{z}/{x}/{y}?stations=${feature.properties?.station_id}`);
+          setClicked({
+            type: 'station',
+            station_id: Number(feature.properties.station_id),
+          });
+          break;
+      }
+    }
+  }, []);
+
+  // stationSource.
 
   return (
     <>
@@ -83,12 +114,31 @@ export default function MapClient(props: {
           
         >
           
-          <Source {...patternSource}>
+          {/* <Source {...patternSource}> */}
+          <Source
+            id={'patternSource'}
+            type='vector'
+            tiles={[
+              patternSourceTile
+            ]}
+            minzoom={8}
+            maxzoom={12}
+          >
+            <Layer {...patternBaseGeomLayerStyle} />
             <Layer {...patternGeomLayerStyle} />
+            
             {/* {routeFilter && <Layer beforeId='patternStrLayer' {...{...highlightedPatternGeomLayerStyle, filter: routeFilter}} />} */}
             {/* <Layer {...patternStrLayerStyle} /> */}
           </Source>
-          <Source {...stationSource}>
+          <Source
+            id='stationSource'
+            type='vector'
+            tiles={[
+              stationSourceTile
+            ]}
+            minzoom={8}
+            maxzoom={12}     
+          >
             <Layer {...stationGeomLayerStyle} />
             {stationFilter && <Layer beforeId='stationStrLayer' {...{...highlightedStationGeomLayerStyle, filter: stationFilter}} />}
             <Layer {...stationStrLayerStyle} />
@@ -103,31 +153,3 @@ export default function MapClient(props: {
 
 
 
-const onClickFunc = (
-  e: maplibregl.MapLayerMouseEvent,
-  setClicked: setNavFunc
-) => {
-  const features = e.features;
-  if (features && features.length > 0) {
-    const feature = features[0];
-    switch (feature.sourceLayer) {
-      case 'stationLayer':
-        console.log('station clicked:', feature);
-        setClicked({
-          type: 'station',
-          station_id: Number(feature.properties.station_id),
-        });
-        break;
-      // case 'patternLayer':
-      //   console.log('pattern clicked:', feature);
-      //   setClicked({
-      //     type: 'route',
-      //     feed_id: Number(feature.properties?.feed_id),
-      //     route_id: String(feature.properties?.route_id),
-      //     station_id: Number(feature.properties?.station_id),
-      //     next_station_id: Number(feature.properties?.next_station_id),
-      //   });
-      //   break;
-    }
-  }
-};
