@@ -6,9 +6,9 @@ const stationsRequester = new APIrequester<station>(
   'gtfsdb/stations', 'db'
 )
 
-async function Page(props: PageProps<'/map/stations/[station_id]'>) {
+async function Page(props: PageProps<'/map/stations/[...station_ids]'>) {
   const params = await props.params;
-  const stationId = Number(params.station_id);
+  const stationId = Number(params.station_ids[0]);
   
   return (
     <>
@@ -37,7 +37,5 @@ async function StationNav(props: {stationId: number}) {
     </>
   )
 }
-
-
 
 export default Page;

@@ -41,3 +41,113 @@
     -- SELECT
     --   ST_AsMVT(q, 'stationLayer', 4096, 'geom', null) as st_asmvt
     -- FROM q;
+
+
+-- with bbox as (select st_transform(ST_TileEnvelope(16,58162,25803), 3857) as b, '平' as daytype),
+-- q as (
+--   SELECT
+--     ST_AsMVTGeom(st_transform(path_geom, 3857), bbox.b) as geom,
+--     stop_path_id,
+--     daytype
+--   FROM busmap.mapstoppaths, bbox
+--   WHERE path_geom && st_transform(bbox.b, 4326)
+-- ),
+-- r as (
+--   select 
+    
+--     geom as geom,
+--     q.stop_path_id,
+--     count,
+--     '' as st
+--   from q
+--   inner join busmap.mapstoppathcount using(stop_path_id, daytype)
+-- ),
+-- t as (
+--   select * from r
+-- )
+-- SELECT
+--   ST_AsMVT(t.*, 'stopPathLayer', 4096, 'geom') as tile
+-- FROM t;
+
+-- with b as (select '平' as daytype),
+-- r as (
+--   select 
+--     pattern_id,
+--     count
+--   from busmap.mapstationpaths, b
+--   inner join busmap.mappatterns using(station_path_id)
+--   inner join busmap.mappatterncount using(pattern_id, count)
+--   where sta1 = $4 or sta2 = $4
+-- ),
+-- s as (
+--   select 
+--     sta1 as station_id,
+--     pattern_id
+--   from r
+--   inner join busmap.mappatterns using(pattern_id)
+--   inner join busmap.mapstationpaths using(station_path_id)
+--   union
+--   select 
+--     sta2 as station_id,
+--     pattern_id
+--   from r
+--   inner join busmap.mappatterns using(pattern_id)
+--   inner join busmap.mapstationpaths using(station_path_id)
+-- ),
+-- t as (
+--   SELECT
+--     ST_AsMVTGeom(st_transform(station_geom, 3857), bbox.b) as geom,
+--     station_id,
+--     station_name,
+--     sum(count) as count,
+--     'selected' as st
+--   FROM s, bbox
+--   inner join busmap.mappatterncount using (pattern_id, daytype)
+--   WHERE busmap.mapstations.station_geom && st_transform(bbox.b, 4326)
+--   group by station_id, station_name, geom
+-- ),
+
+
+with bbox as (select st_transform(ST_TileEnvelope(2,3,1), 3857) as b, '平' as daytype),
+q as (
+  SELECT
+    ST_AsMVTGeom(st_transform(station_geom, 3857), bbox.b) as geom,
+    station_id,
+    daytype
+  FROM busmap.mapstations, bbox
+),
+r as (
+  select
+    station_id,
+    geom,
+    count,
+    'base' as st
+  from q
+  inner join busmap.mapstationcount using(station_id, daytype)
+),
+s as (
+  select
+    station_id,
+    geom,
+    sum(count),
+    case when station_id in (1396,1392) then 'hilighted' else 'selected' end as st
+  from q
+  inner join busmap.mappatterns using(station_id)
+  inner join busmap.mappatterncount using(pattern_id, daytype)
+  where mappatterns.pattern_id in (
+    select pattern_id
+    from (
+      select
+        mappatterns.pattern_id,
+        count(pattern_id)
+      from busmap.mappatterns
+      where station_id in (1396,1392)
+      group by pattern_id
+    )
+    where count = 2
+  )
+  group by station_id, geom
+)
+select * from r
+union all
+select * from s;

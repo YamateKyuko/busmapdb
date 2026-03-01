@@ -18,6 +18,8 @@ export const stationPathsGeomLayerStyle: LayerProps = {
   source: 'stationPathsSource',
   'source-layer': 'stationPathsLayer',
   filter: ['==', ['get', 'st'], 'selected'],
+  minzoom: 8,
+  maxzoom: 16,
   layout: {
     'line-cap': 'round',
     'line-sort-key': ['-', ['get', 'count']],
@@ -50,6 +52,8 @@ export const stationPathsBaseGeomLayerStyle: LayerProps = {
   source: 'stationPathsSource',
   'source-layer': 'stationPathsLayer',
   filter: ['==', ['get', 'st'], 'base'],
+  minzoom: 8,
+  maxzoom: 16,
   layout: {
     'line-cap': 'round',
     'line-sort-key': ['-', ['get', 'count']],
@@ -125,6 +129,7 @@ export const stationGeomLayerStyle: LayerProps = {
   source: 'stationSource',
   'source-layer': 'stationLayer',
   layout: {},
+  filter: ['any', ['==', ['get', 'st'], 'selected'], ['==', ['get', 'st'], 'highlighted']],
   paint: {
     'circle-radius': [
       'interpolate',
@@ -135,7 +140,13 @@ export const stationGeomLayerStyle: LayerProps = {
       15,
       ['/', ['log2', ['*', ['get', 'count'], 2]], 1],
     ],
-    'circle-color': '#008000',
+    'circle-color': [
+      'match',
+      ['get', 'st'],
+      'highlighted', '#ff0000',
+      'selected', '#008000',
+      '#888888'
+    ],
 
     // ''
     // 'fill-color': '#888888',
@@ -145,16 +156,29 @@ export const stationGeomLayerStyle: LayerProps = {
   },
 }
 
-export const highlightedStationGeomLayerStyle: LayerProps = {
-  id: 'highlightedStationGeomLayer',
-  type: 'fill',
+export const stationBaseGeomLayerStyle: LayerProps = {
+  id: 'stationBaseGeomLayer',
+  type: 'circle',
   source: 'stationSource',
   'source-layer': 'stationLayer',
   layout: {},
+  filter: ['==', ['get', 'st'], 'base'],
   paint: {
-    'fill-color': '#ff0000',
-    'fill-outline-color': '#383737',
-    'fill-opacity': 1,
+    'circle-radius': [
+      'interpolate',
+      ['linear'],
+      ['zoom'],
+      2,
+      ['/', ['log2', ['*', ['get', 'count'], 2]], 10],
+      15,
+      ['/', ['log2', ['*', ['get', 'count'], 2]], 1],
+    ],
+    'circle-color': '#888888',
+
+    // ''
+    // 'fill-color': '#888888',
+    // 'fill-outline-color': '#000000',
+    // 'fill-opacity': 1,
 
   },
 }
@@ -164,8 +188,8 @@ export const stationStrLayerStyle: LayerProps = {
   type: 'symbol',
   source: 'stationSource',
   'source-layer': 'stationLayer',
-  'maxzoom': 20,
   'minzoom': 12,
+  'maxzoom': 20,
   'layout': {
     'icon-image': '',
     'text-font': ['NotoSansCJKjp-Regular'],
@@ -211,3 +235,32 @@ export const stationStrLayerStyle: LayerProps = {
 //     // 'fill-opacity': 1,
 //   },
 // }
+
+export const stopPathsGeomLayerStyle: LayerProps = {
+  id: 'stopPathsGeomLayer',
+  type: 'line',
+  source: 'stopPathsSource',
+  'source-layer': 'stopPathsLayer',
+  minzoom: 16,
+  maxzoom: 20,
+  layout: {
+    'line-cap': 'round',
+    // 'line-sort-key': ['-', ['get', 'count']],
+  },
+  paint: {
+    'line-color': '#0000ff',
+    // 'line-width': ['/', ['get', 'count'], 10],
+    // 'line-blur': 2,
+    
+    'line-width': [
+      'interpolate',
+      ['linear'],
+      ['zoom'],
+      2,
+      ['/', ['log2', ['*', ['get', 'count'], 2]], 10],
+      15,
+      ['/', ['log2', ['*', ['get', 'count'], 2]], 1],
+    ],
+      // 'line-width': 3
+  },
+}

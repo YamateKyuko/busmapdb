@@ -1,7 +1,8 @@
+import { SearchParams } from '@/app/map/lib/util';
 import { NextResponse } from 'next/server';
 import { Client } from 'pg';
 
-export async function GET(_req: Request, ctx: RouteContext<'/api/map/stations/[...tilenum]'>) {
+export async function GET(req: Request, ctx: RouteContext<'/api/map/stations/[...tilenum]'>) {
   const tilenumstrs = (await ctx.params).tilenum;
   const tilenums: number[] = [];
   tilenumstrs.forEach((v, i) => {
@@ -14,33 +15,78 @@ export async function GET(_req: Request, ctx: RouteContext<'/api/map/stations/[.
   if (tilenums.length !== 3) {
     return new Response('Bad Request', { status: 400 });
   };
+
   const [z, x, y] = tilenums as [number, number, number];
+  const station_ids = new SearchParams(req.url).getNumArrParam('station_ids')
+
+  const prepared: (number)[] = 
+  station_ids.length !== 0
+    ? [z, x, y, station_ids.length, ...station_ids]
+    : [z,x,y];
 
   const client = new Client(process.env.DATABASE_URL);
   await client.connect();
 
   const res = await client.query(`
-    with bbox as (select st_transform(ST_TileEnvelope($1, $2, $3), 3857) as b, '平' as daytype),
-    q as (
-      SELECT
-        ST_AsMVTGeom(st_transform(station_geom, 3857), bbox.b) as geom,
-        station_id,
-        station_name,
-        count
-      FROM busmap.mapstations
-      join bbox on true
-      inner join busmap.mapstationcount using (station_id, daytype)
-      WHERE busmap.mapstations.station_geom && st_transform(bbox.b, 4326)
+
+with bbox as (select st_transform(ST_TileEnvelope($1, $2, $3), 3857) as b, '平' as daytype),
+q as (
+  SELECT
+    ST_AsMVTGeom(st_transform(station_geom, 3857), bbox.b) as geom,
+    station_id,
+    station_name,
+    daytype
+  FROM busmap.mapstations, bbox
+),
+r as (
+  select
+    station_id,
+    station_name,
+    geom,
+    count,
+    ${station_ids.length !== 0 ? `'base'` : `'selected'`} as st
+  from q
+  inner join busmap.mapstationcount using(station_id, daytype)
+),
+${station_ids.length !== 0 ? `
+s as (
+  select
+    station_id,
+    station_name,
+    geom,
+    sum(count),
+    case when station_id in (${station_ids.map((v,i) => `$${i + 5}`)}) then 'highlighted' else 'selected' end as st
+  from q
+  inner join busmap.mappatterns using(station_id)
+  inner join busmap.mappatterncount using(pattern_id, daytype)
+  where mappatterns.pattern_id in (
+    select pattern_id
+    from (
+      select
+        mappatterns.pattern_id,
+        count(pattern_id)
+      from busmap.mappatterns
+      where station_id in (${station_ids.map((v,i) => `$${i + 5}`)})
+      group by pattern_id
     )
-    SELECT
-      ST_AsMVT(q, 'stationLayer', 4096, 'geom', null) as st_asmvt
-    FROM q;
-  `, [z, x, y]);
+    where count = $4
+  )
+  group by station_id, station_name, geom
+),
+` : ''}
+t as (
+  select * from r
+  ${station_ids.length !== 0 ? `union all select * from s` : ''}
+)
+SELECT
+  ST_AsMVT(t.*, 'stationLayer', 4096, 'geom') as st_asmvt
+FROM t;
+  `, prepared);
 
   await client.end();
 
   const tile = res.rows[0].st_asmvt;
-  console.log(`station tile size: ${tile.length} bytes`);
+  // console.log(`station tile size: ${tile.length} bytes`);
 
   return new NextResponse(tile, {
     headers: {

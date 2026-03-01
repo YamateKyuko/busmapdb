@@ -3,10 +3,11 @@ import * as React from 'react';
 import Map, { Layer, MapRef, Source } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import maplibregl, { FilterSpecification } from 'maplibre-gl';
-import { setNavFunc, setNavParams, setRoutesNavParams, setStationsNavParams } from './mapComponent';
-import { stationPathsGeomLayerStyle, stationGeomLayerStyle, highlightedStationGeomLayerStyle, stationStrLayerStyle, stationSource, stationPathsBaseGeomLayerStyle } from './mapstyles';
+import { setNavFunc, setNavParams, setStationsNavParams } from './mapComponent';
+import { stationPathsGeomLayerStyle, stationGeomLayerStyle, stationStrLayerStyle, stationSource, stationPathsBaseGeomLayerStyle, stopPathsGeomLayerStyle, stationBaseGeomLayerStyle } from './mapstyles';
 import styles from './map.module.css';
 import { usePathname } from 'next/navigation';
+import { SearchParams } from '../lib/util';
 
 export default function MapClient(props: {
   setNav: setNavFunc
@@ -50,11 +51,7 @@ export default function MapClient(props: {
   //   [clickedFeature]);
     
 
-  const setClicked = React.useCallback(async (feature: setNavParams) => {
-    props.setNav(feature);
-    // setClickedFeature(feature);
-    
-  }, [props]);
+
 
   // const onClick = React.useCallback((e: maplibregl.MapLayerMouseEvent) => onClickFunc(
   //   e,
@@ -62,49 +59,99 @@ export default function MapClient(props: {
   //   // setClickedFeature
   // ), [setClicked]);
 
-  const pathnames = usePathname().split('/');
-  const highlightedType = pathnames[2] || null;
-  const hilightedValue = pathnames[3] || null;
-  
   // pathtype
 
   // const stationId = searchparams.get('station_id');
 
-  const [stationPathsSourceTile, setStationPathsSourceTile] = React.useState<string>(
-    `custom://api/map/stationPaths/{z}/{x}/{y}${highlightedType == 'stations' && hilightedValue ? `?station_id=${hilightedValue}` : ''}`
-  );
+  const [highlightedState, setHighlightedState] = React.useState<setNavParams>({type: 'default', path: ''});
 
-  const [stationSourceTile, setStationSourceTile] = React.useState<string>(
-    `custom://api/map/stations/{z}/{x}/{y}`
-  );
+  const setClicked = React.useCallback(async (feature: setNavParams) => {
+  // const setClicked = (feature: setNavParams) => {
+    // let bool = false;
+    // console.log(feature.path, highlightedState.path);
 
-  const onClick = React.useCallback((e: maplibregl.MapLayerMouseEvent) => {
+    console.log(feature);
+
+    // if (feature.path === highlightedState.path) {
+    //   // console.log('same feature clicked');
+    //   props.setNav({type: 'default', path: ''});
+    //   setHighlightedState({type: 'default', path: ''});
+    //   return;
+    // }
+
+    
+    setHighlightedState(feature);
+    props.setNav(feature);
+    
+    // setClickedFeature(feature);
+  
+  }, [props]);
+  // };
+
+  const onClick = (e: maplibregl.MapLayerMouseEvent) => {
     const features = e.features;
     if (features && features.length > 0) {
       const feature = features[0];
+      
       switch (feature.sourceLayer) {
         case 'stationLayer':
-          // console.log(`highlightedType: ${highlightedType}, highlightedValue: ${hilightedValue}`);
-          // // console.log(`clicked station with id ${feature.properties?.station_id}`);
-          // if (highlightedType == 'stations' && hilightedValue == String(feature.properties?.station_id)) {
-          //   console.log('clicked highlighted station, resetting to default');
-          //   setStationPathsSourceTile(`custom://api/map/stationPaths/{z}/{x}/{y}`);
-          //   setClicked({
-          //     type: 'default',
-          //   });
-          // } else {
-            setStationPathsSourceTile(`custom://api/map/stationPaths/{z}/{x}/{y}?station_id=${feature.properties?.station_id}`);
+          const clickedStationId = Number(feature.properties.station_id);
+          if (isNaN(clickedStationId)) return;
+          // console.log(clickedStationId);
+          if (highlightedState.type === 'stations') {
+            const highlightedStationIds = highlightedState.station_ids;
+            const deletedArray = highlightedStationIds.filter((id) => id !== clickedStationId);
+
+            if (deletedArray.length === 0) {
+              setClicked({type: 'default', path: ''});
+            } else {
+              if (!highlightedStationIds.includes(clickedStationId)) {
+                deletedArray.push(clickedStationId);
+              }
+              setClicked({
+                type: 'stations',
+                station_ids: deletedArray,
+                path: `stations/${deletedArray.join('/')}`
+              });
+            }
+          } else {
             setClicked({
-              type: 'station',
-              station_id: Number(feature.properties.station_id),
+              type: 'stations',
+              station_ids: [clickedStationId],
+              path: `stations/${clickedStationId}`
             });
-          // }
-          
-          
+          };
+          break;
+        case 'stationPathsLayer':
+          const clickedStationPathsId = Number(feature.properties.station_path_id);
+          if (isNaN(clickedStationPathsId)) return;
+          if (highlightedState.type === 'station_paths') {
+            const highlightedStationPathIds = highlightedState.station_path_ids;
+            const deletedArray = highlightedStationPathIds.filter((id) => id !== clickedStationPathsId);
+
+            if (deletedArray.length === 0) {
+              setClicked({type: 'default', path: ''});
+            } else {
+              if (!highlightedStationPathIds.includes(clickedStationPathsId)) {
+                deletedArray.push(clickedStationPathsId);
+              }
+              setClicked({
+                type: 'station_paths',
+                station_path_ids: deletedArray,
+                path: `station_paths/${deletedArray.join('/')}`
+              });
+            }
+          } else {
+            setClicked({
+              type: 'station_paths',
+              station_path_ids: [clickedStationPathsId],
+              path: `station_paths/${clickedStationPathsId}`
+            });
+          };
           break;
       }
     }
-  }, []);
+  };
 
   // stationSource.
 
@@ -119,18 +166,37 @@ export default function MapClient(props: {
             latitude: 35.69,
             zoom: 13
           }}
+
+          minZoom={13}
           
           mapStyle='custom://pale.json'
           ref={mapRef}
           onClick={onClick}
-          interactiveLayerIds={['stationPathsGeomLayer', 'stationGeomLayer']} // 消すな
+          interactiveLayerIds={[
+            'stationPathsGeomLayer',
+            'stationPathsBaseGeomLayer',
+            'stationGeomLayer',
+            'stationBaseGeomLayer',
+            'stationStrLayer'
+          ]} // 消すな
           
         >
           <Source
-            id={'stationPathsSource'}
+            id='stationPathsSource'
             type='vector'
             tiles={[
-              stationPathsSourceTile
+              `custom://api/map/stationPaths/{z}/{x}/{y}${
+                highlightedState.type == 'stations'
+                  ? new SearchParams()
+                    .setNumArrParam('station_ids', highlightedState.station_ids)
+                    .getParamStr() 
+                : highlightedState.type == 'station_paths'
+                  ? new SearchParams()
+                    .setNumArrParam('station_path_ids', highlightedState.station_path_ids)
+                    .getParamStr()
+              
+                  : ''
+              }`
             ]}
             minzoom={8}
             maxzoom={12}
@@ -145,16 +211,36 @@ export default function MapClient(props: {
             id='stationSource'
             type='vector'
             tiles={[
-              stationSourceTile
+              `custom://api/map/stations/{z}/{x}/{y}${
+                highlightedState.type == 'stations'
+                  ? new SearchParams()
+                    .setNumArrParam('station_ids', highlightedState.station_ids)
+                    .getParamStr()
+                  : ''
+              }`
             ]}
             minzoom={8}
             maxzoom={12}     
           >
+            <Layer {...stationBaseGeomLayerStyle} />
             <Layer {...stationGeomLayerStyle} />
             {/* {stationFilter && <Layer beforeId='stationStrLayer' {...{...highlightedStationGeomLayerStyle, filter: stationFilter}} />} */}
             <Layer {...stationStrLayerStyle} />
+            
 
             {/* <Layer {...stopLayerStyle} /> */}
+          </Source>
+          <Source
+            id='stopPathsSource'
+            type='vector'
+            tiles={[
+              `custom://api/map/stopPaths/{z}/{x}/{y}`
+            ]}
+            minzoom={15}
+            maxzoom={20}
+          >
+            <Layer {...stopPathsGeomLayerStyle} />
+            {/* <Layer {...paleLayerStyle} /> */}
           </Source>
         </Map>
       </div>

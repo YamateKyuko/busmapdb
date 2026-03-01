@@ -23,9 +23,6 @@ export async function GET(req: Request, ctx: RouteContext<'/api/map/stopPaths/[.
   const feedid = searchparams.get('feed_id');
   const stopid = searchparams.get('stops');
 
-  const client = new Client(process.env.DATABASE_URL);
-  await client.connect();
-
   const prepared: (number | string)[] = [z,x,y];
   if (feedid !== null && stopid !== null) {
     const fid = Number(feedid);
@@ -35,6 +32,9 @@ export async function GET(req: Request, ctx: RouteContext<'/api/map/stopPaths/[.
     prepared.push(fid);
     prepared.push(stopid);
   };
+
+  const client = new Client(process.env.DATABASE_URL);
+  await client.connect();
 
   const res = await client.query(`
 with bbox as (select st_transform(ST_TileEnvelope($1, $2, $3), 3857) as b, '平' as daytype),
@@ -80,13 +80,15 @@ t as (
   select * from r${stopid !== null ? ' union all select * from s' : ''}
 )
 SELECT
-  ST_AsMVT(t.*, 'stopPathLayer', 4096, 'geom') as tile
+  ST_AsMVT(t.*, 'stopPathsLayer', 4096, 'geom') as tile
 FROM t;
   `, [z, x, y]);
 
   await client.end()
 
-  const tile = res.rows[0].st_asmvt;
+  const tile = res.rows[0].tile;
+
+  console.log(`stop path tile size: ${tile.length} bytes`);
 
   return new NextResponse(tile, {
     headers: {
