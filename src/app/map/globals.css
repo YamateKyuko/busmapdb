@@ -1,0 +1,55 @@
+:root {
+  --bk: #222;
+  --wh: ivory;
+  --a1: #008000;
+  --a2: #00b000;
+
+  --tx: var(--bk);
+  --bg: var(--wh);
+
+  --header-height: 2rem;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not(:has(#dark)) {
+    background-color: #f00 !important;
+    --tx: var(--bk);
+    --bg: var(--wh);
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(:has(#light)) {
+    --tx: var(--wh);
+    --bg: var(--bk);
+  }
+}
+
+
+:not(.maplibregl-map *, .maplibregl-map) {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background-color: var(--bg);
+  color: var(--tx);
+  overflow: hidden;
+  /* width: 100%;
+  height: 100%; */
+}
+
+.maplibregl-map {
+  background-color: var(--bg);
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+}
+
+/* @media (prefers-color-scheme: dark) {
+  body {
+    background-color: #000;
+    color: #fff;
+  }
+} */

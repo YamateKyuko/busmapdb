@@ -25,8 +25,8 @@ async function StationNav(props: {stationId: number}) {
   if (!res) return <div>Station not found</div>;
   // console.log(res);
   return (
-    <>
-      {res.station_id}: {res.station_name}
+    <section>
+      <h3>{res.station_id}: {res.station_name}</h3>
       {res.stop_patterns.map((pattern, i) => (
         <p key={`${pattern.pattern_id}_${i}`}>
           <span>{pattern.platform_code}</span>
@@ -34,7 +34,7 @@ async function StationNav(props: {stationId: number}) {
           {pattern.stop_headsign}
         </p>
       ))}
-    </>
+    </section>
   )
 }
 

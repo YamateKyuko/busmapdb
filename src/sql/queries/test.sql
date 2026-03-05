@@ -108,46 +108,48 @@
 -- ),
 
 
-with bbox as (select st_transform(ST_TileEnvelope(2,3,1), 3857) as b, '平' as daytype),
-q as (
-  SELECT
-    ST_AsMVTGeom(st_transform(station_geom, 3857), bbox.b) as geom,
-    station_id,
-    daytype
-  FROM busmap.mapstations, bbox
-),
-r as (
-  select
-    station_id,
-    geom,
-    count,
-    'base' as st
-  from q
-  inner join busmap.mapstationcount using(station_id, daytype)
-),
-s as (
-  select
-    station_id,
-    geom,
-    sum(count),
-    case when station_id in (1396,1392) then 'hilighted' else 'selected' end as st
-  from q
-  inner join busmap.mappatterns using(station_id)
-  inner join busmap.mappatterncount using(pattern_id, daytype)
-  where mappatterns.pattern_id in (
-    select pattern_id
-    from (
-      select
-        mappatterns.pattern_id,
-        count(pattern_id)
-      from busmap.mappatterns
-      where station_id in (1396,1392)
-      group by pattern_id
-    )
-    where count = 2
-  )
-  group by station_id, geom
-)
-select * from r
-union all
-select * from s;
+-- with bbox as (select st_transform(ST_TileEnvelope(2,3,1), 3857) as b, '平' as daytype),
+-- q as (
+--   SELECT
+--     ST_AsMVTGeom(st_transform(station_geom, 3857), bbox.b) as geom,
+--     station_id,
+--     daytype
+--   FROM busmap.mapstations, bbox
+-- ),
+-- r as (
+--   select
+--     station_id,
+--     geom,
+--     count,
+--     'base' as st
+--   from q
+--   inner join busmap.mapstationcount using(station_id, daytype)
+-- ),
+-- s as (
+--   select
+--     station_id,
+--     geom,
+--     sum(count),
+--     case when station_id in (1396,1392) then 'hilighted' else 'selected' end as st
+--   from q
+--   inner join busmap.mappatterns using(station_id)
+--   inner join busmap.mappatterncount using(pattern_id, daytype)
+--   where mappatterns.pattern_id in (
+--     select pattern_id
+--     from (
+--       select
+--         mappatterns.pattern_id,
+--         count(pattern_id)
+--       from busmap.mappatterns
+--       where station_id in (1396,1392)
+--       group by pattern_id
+--     )
+--     where count = 2
+--   )
+--   group by station_id, geom
+-- )
+-- select * from r
+-- union all
+-- select * from s;
+
+select * from busmap.mapstoppathcount

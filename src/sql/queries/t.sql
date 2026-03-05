@@ -276,14 +276,18 @@ drop table if exists busmap.mapstationpathcount;
 create table busmap.mapstationpathcount (
   station_path_id integer not null,
   daytype text not null,
-  count integer
+  cnt0 integer not null,
+  cnt1 integer not null,
+  count integer not null
 );
 
-insert into busmap.mapstationpathcount (station_path_id, daytype, count)
+insert into busmap.mapstationpathcount (station_path_id, daytype, cnt0, cnt1, count)
 select 
   station_path_id,
   daytype,
-  sum(count)
+  coalesce(sum(count) filter(where station_path_direction = 0), 0),
+  coalesce(sum(count) filter(where station_path_direction = 1), 0),
+  coalesce(sum(count), 0)
 from busmap.mappatterns
 inner join busmap.mapstationpaths using(station_path_id)
 inner join busmap.mappatterncount using(pattern_id)
@@ -295,14 +299,18 @@ drop table if exists busmap.mapstoppathcount;
 create table busmap.mapstoppathcount (
   stop_path_id integer not null,
   daytype text not null,
+  cnt0 integer not null,
+  cnt1 integer not null,
   count integer
 );
 
-insert into busmap.mapstoppathcount (stop_path_id, daytype, count)
+insert into busmap.mapstoppathcount (stop_path_id, daytype, cnt0, cnt1, count)
 select 
   stop_path_id,
   daytype,
-  sum(count)
+  coalesce(sum(count) filter(where stop_path_direction = 0), 0),
+  coalesce(sum(count) filter(where stop_path_direction = 1), 0),
+  coalesce(sum(count), 0)
 from busmap.mappatterns
 inner join busmap.mapstoppaths using(stop_path_id)
 inner join busmap.mappatterncount using(pattern_id)

@@ -17,7 +17,7 @@ export const stationPathsGeomLayerStyle: LayerProps = {
   type: 'line',
   source: 'stationPathsSource',
   'source-layer': 'stationPathsLayer',
-  filter: ['==', ['get', 'st'], 'selected'],
+  filter: ['any', ['==', ['get', 'st'], 'selected'], ['==', ['get', 'st'], 'highlighted']],
   minzoom: 8,
   maxzoom: 16,
   layout: {
@@ -26,13 +26,17 @@ export const stationPathsGeomLayerStyle: LayerProps = {
   },
   paint: {
     'line-color': [
-      'rgb', 
-      ['min', ['*', ['log2', ['*', ['get', 'count'], 1]], 50], 255],
-      ['max', ['-', 255, ['*', ['log2', ['*', ['get', 'count'], 1]], 20]], 0],
-      0
+      'match',
+      ['get', 'st'],
+      'highlighted', '#ff0000',
+      'selected', [
+        'rgb', 
+        ['min', ['*', ['log2', ['*', ['get', 'count'], 1]], 50], 255],
+        ['max', ['-', 255, ['*', ['log2', ['*', ['get', 'count'], 1]], 20]], 0],
+        0
+      ],
+      '#888888'
     ],
-    // 'line-width': ['/', ['get', 'count'], 10],
-    // 'line-blur': 2,
     
     'line-width': [
       'interpolate',
@@ -75,6 +79,87 @@ export const stationPathsBaseGeomLayerStyle: LayerProps = {
   },
 }
 
+export const stationPathsArrow0LayerStyle: LayerProps = {
+  id: 'stationPathsArrow0Layer',
+  type: 'symbol',
+  source: 'stationPaths',
+  'source-layer': 'stationPathsLayer',
+  paint: {
+    
+    // 'icon-color': [
+    //   'match',
+    //   ['get', 'st'],
+    //   'highlighted', '#ff0000',
+    //   'selected', [
+    //     'rgb', 
+    //     ['min', ['*', ['log2', ['*', ['get', 'cnt0'], 1]], 50], 255],
+    //     ['max', ['-', 255, ['*', ['log2', ['*', ['get', 'cnt0'], 1]], 20]], 0],
+    //     0
+    //   ],
+    //   '#888888'
+    // ],
+
+    'icon-color': [
+      'match',
+      ['get', 'st'],
+      'highlighted', '#ff0000',
+      'selected', '#000000',
+      '#888888'
+    ],
+    // 'icon-halo-color': '#000',
+    // 'icon-halo-width': 0.8,
+    // 'icon-halo-blur': 0
+  },
+  layout: {
+    'symbol-placement': 'line-center',
+    'icon-image': 'arrow',
+    'icon-overlap': 'always',
+    'icon-size': [
+      'interpolate',
+      ['linear'],
+      ['zoom'],
+      2,
+      ['*', ['log2', ['*', ['get', 'cnt0'], 2]], 0.004],
+      15,
+      ['*', ['log2', ['*', ['get', 'cnt0'], 2]], 0.04],
+    ],
+    'symbol-sort-key': ['match', ['get', 'st'], 'highlighted', 2, 'selected', 1, 0],
+    // 'symbol-avoid-edges': true,
+  }
+};
+
+export const stationPathsArrow1LayerStyle: LayerProps = {
+  id: 'stationPathsArrow1Layer',
+  type: 'symbol',
+  source: 'stationPaths',
+  'source-layer': 'stationPathsLayer',
+  paint: {
+    'icon-color': [
+      'match',
+      ['get', 'st'],
+      'highlighted', '#ff0000',
+      'selected', '#000000',
+      '#888888'
+    ],
+  },
+  layout: {
+    'symbol-placement': 'line-center',
+    'icon-image': 'arrow',
+    'icon-overlap': 'always',
+    'icon-size': [
+      'interpolate',
+      ['linear'],
+      ['zoom'],
+      2,
+      ['*', ['log2', ['*', ['get', 'cnt1'], 2]], 0.004],
+      15,
+      ['*', ['log2', ['*', ['get', 'cnt1'], 2]], 0.04],
+    ],
+    'icon-rotate': 180
+    // 'symbol-avoid-edges': true,
+  }
+};
+
 // export const highlightedPatternGeomLayerStyle: LayerProps = {
 //   id: 'highlightedPatternGeomLayer',
 //   type: 'line',
@@ -115,13 +200,13 @@ export const stationPathsBaseGeomLayerStyle: LayerProps = {
 //   }
 // }
 
-export const stationSource: SourceProps = {
-  id: 'stationSource',
-  type: 'vector',
-  tiles: [`custom://api/map/stations/{z}/{x}/{y}`],
-  minzoom: 0,
-  maxzoom: 14,
-}
+// export const stationSource: SourceProps = {
+//   id: 'stationSource',
+//   type: 'vector',
+//   tiles: [`custom://api/map/stations/{z}/{x}/{y}`],
+//   minzoom: 0,
+//   maxzoom: 14,
+// }
 
 export const stationGeomLayerStyle: LayerProps = {
   id: 'stationGeomLayer',

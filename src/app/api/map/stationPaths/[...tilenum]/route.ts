@@ -46,6 +46,8 @@ r as (
     geom as geom,
     q.station_path_id,
     count,
+    cnt0,
+    cnt1,
     ${
       stationIds.length !== 0 ||
       stationPathIds.length !== 0
@@ -61,6 +63,8 @@ s as (
     geom as geom,
     station_path_id,
     sum(count) as count,
+    coalesce(sum(count) filter(where station_path_direction = 0), 0) as cnt0,
+    coalesce(sum(count) filter(where station_path_direction = 1), 0) as cnt1,
     'selected' as st
   from q
   inner join busmap.mappatterns using(station_path_id)
@@ -86,7 +90,12 @@ s as (
     geom as geom,
     station_path_id,
     sum(count) as count,
-    'selected' as st
+    coalesce(sum(count) filter(where station_path_direction = 0), 0) as cnt0,
+    coalesce(sum(count) filter(where station_path_direction = 1), 0) as cnt1,
+    case when station_path_id in (${stationPathIds.map((v,i) => `$${i + 5}`)})
+      then 'highlighted'
+      else 'selected'
+    end as st
   from q
   inner join busmap.mappatterns using(station_path_id)
   inner join busmap.mappatterncount using(pattern_id, daytype)

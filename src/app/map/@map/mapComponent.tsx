@@ -36,47 +36,27 @@ export type setNavFunc = (params: setNavParams) => Promise<void>;
 function MapComponent() {
   async function setNav(params: setNavParams) {
     'use server';
-    // console.log(params);
-
-    // if (params.type === 'default') {
-    //   redirect(`/map/${params.path}`);
-    //   return;
-    // }
-
-    revalidatePath('/map/@map');
-    
+    revalidatePath('/map/');
+    if (params.type === 'default') {
+      redirect(`/map`);
+    }
     redirect(`/map/${params.path}`);
-    // if (params.type === 'stations') {
-    //   revalidatePath('/map/@map');
-      
-    //   redirect(`/map/stations/${encodeNumParam(params.station_id)}`, RedirectType.push);
-    // }
-    // if (params.type === 'route') {
-    //   revalidatePath('/map/@map');
-    //   redirect(
-    //     `/map/routes/${
-    //       encodeNumParam(params.feed_id)
-    //     }/${
-    //       encodeStrParam(params.route_id)
-    //     }${
-    //       (params.station_id && params.next_station_id) &&
-    //         `?station_id=${
-    //           encodeNumParam(params.station_id)
-    //         }&next_station_id=${
-    //           encodeNumParam(params.next_station_id)
-    //     }`}`,
-    //     RedirectType.push
-    //   );
-    // };
-    // if (params.type === 'default') {
-    //   revalidatePath('/map/@map');
-    //   redirect(`/map`, RedirectType.push);
-    // }
   };
+
+  async function getTile(url: string) {
+    'use server';
+    const burl = process.env.NEXT_PUBLIC_BASE_URL;
+    if (!burl) throw new Error('NEXT_PUBLIC_BASE_URL is not defined');
+    // console.log(`Fetching tile from ${url}`);
+    const res = await fetch(`${burl}${url}`);
+    const buffer = await res.arrayBuffer();
+    return buffer;
+  }
 
   return (
     <MapClient
       setNav={setNav}
+      getTile={getTile}
     />
   );
 };
