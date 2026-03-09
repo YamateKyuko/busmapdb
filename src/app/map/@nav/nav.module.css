@@ -9,24 +9,41 @@
   /* scroll-snap-type: y mandatory; */
   pointer-events: none;
   background-color: transparent;
-
-
   overscroll-behavior: none;
-
-
   scrollbar-width: none;
   &::-webkit-scrollbar {display: none;}
-  
+
+  &:has(.details:not([open])) {
+    summary {
+      position: fixed;
+      bottom: 1rem;
+      left: 1rem;
+      width: 2rem;
+      height: 2rem;
+      display: block;
+      background-color: #222;
+      /* color: #000; */
+      z-index: 100;
+    }
+    .spacer {
+      /* height: calc(10%); */
+      display: none;
+    }
+    .details {
+      height: 0;
+    }
+  }
+
+  .spacer {
+    height: calc(100% - 4rem);
+    background-color: transparent;
+  }
+
+  .details {
+    pointer-events: auto;
+    height: 80%;
+  }
 }
 
-.spacer {
-  height: calc(100% - 2rem);
-  background-color: transparent;
-  /* scroll-snap-align: start; */
-}
 
-.details {
-  /* scroll-snap-align: start; */
-  pointer-events: auto;
-  height: 80%;
-}
+

@@ -39,10 +39,10 @@ export default function MapClient(props: {
   React.useEffect(() => {
     maplibregl.addProtocol('tiles', async (requestParam): Promise<GetResourceResponse<any>> => {
       const apiReplacedUrl = requestParam.url.replace('tiles://api/', '');
-      const apiRes = await props.getTile(`/api/${apiReplacedUrl}`);
-      // const apiRes = await fetch(`/api/${apiReplacedUrl}`);
-      // const buffer = await apiRes.arrayBuffer();
-      return {data: apiRes};
+      // const apiRes = await props.getTile(`/api/${apiReplacedUrl}`);
+      const apiRes = await fetch(`/api/${apiReplacedUrl}`);
+      const buffer = await apiRes.arrayBuffer();
+      return {data: buffer};
     });
 
     maplibregl.addProtocol('custom', async (requestParam): Promise<GetResourceResponse<any>> => {
