@@ -1,4 +1,4 @@
-import { SearchParams } from '@/app/map/lib/util';
+import { SearchParams } from '@/app/util';
 import { NextResponse } from 'next/server';
 import { Client } from 'pg';
 
@@ -29,7 +29,7 @@ export async function GET(req: Request, ctx: RouteContext<'/api/map/stations/[..
 
   const res = await client.query(`
 
-with bbox as (select st_transform(ST_TileEnvelope($1, $2, $3), 3857) as b, '平' as daytype),
+with bbox as (select st_transform(ST_TileEnvelope($1, $2, $3), 3857) as b, st_transform(ST_TileEnvelope($1, $2, $3), 4326) as bb, '平' as daytype),
 q as (
   SELECT
     ST_AsMVTGeom(st_transform(station_geom, 3857), bbox.b) as geom,
@@ -37,6 +37,7 @@ q as (
     station_name,
     daytype
   FROM busmap.mapstations, bbox
+  WHERE station_geom && bbox.bb
 ),
 r as (
   select

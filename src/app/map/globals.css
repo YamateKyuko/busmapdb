@@ -3,6 +3,8 @@
   --wh: ivory;
   --a1: #008000;
   --a2: #00b000;
+  --gw: #bbb;
+  --gb: #333;
 
   --tx: var(--bk);
   --bg: var(--wh);
@@ -12,9 +14,9 @@
 
 @media (prefers-color-scheme: light) {
   :root:not(:has(#dark)) {
-    background-color: #f00 !important;
     --tx: var(--bk);
     --bg: var(--wh);
+    --gr: var(--gw);
   }
 }
 
@@ -22,30 +24,29 @@
   :root:not(:has(#light)) {
     --tx: var(--wh);
     --bg: var(--bk);
+    --gr: var(--gb);
   }
 }
 
 
-:not(.maplibregl-map *, .maplibregl-map) {
+:not(:where(.maplibregl-map *, .maplibregl-map)) {
   margin: 0;
   padding: 0;
   border: 0;
-  background-color: var(--bg);
+  /* background-color: var(--bg); */
   color: var(--tx);
-  overflow: hidden;
+  overflow: visible;
   /* width: 100%;
   height: 100%; */
+
+  font-family: sans-serif;
 }
 
 .maplibregl-map {
   background-color: var(--bg);
 }
 
-html,
-body {
-  width: 100%;
-  height: 100%;
-}
+
 
 /* @media (prefers-color-scheme: dark) {
   body {

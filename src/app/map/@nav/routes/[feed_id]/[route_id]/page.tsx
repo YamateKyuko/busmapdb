@@ -1,7 +1,7 @@
 import 'server-only';
 
 import { APIrequester } from "@/app/map/lib/request";
-import { decodeNumParam, decodeStrParam } from "@/app/map/lib/util";
+import { decodeNumParam, decodeStrParam } from "@/app/util";
 import { Suspense } from "react";
 
 const stationTimesRequester = new APIrequester<{

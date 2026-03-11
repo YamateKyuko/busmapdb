@@ -25,3 +25,5 @@ pg_restore \
   --clean \
   --if-exists \
   --no-privileges
+
+# psql -d $NEON_DATABASE_URL -f ./index.sql

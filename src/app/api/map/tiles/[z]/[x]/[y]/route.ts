@@ -1,21 +1,12 @@
-import { SearchParams } from '@/app/util';
+import { getErrRes, getZXY, SearchParams } from '@/app/util';
 import { NextResponse } from 'next/server';
 import { Client } from 'pg';
 
-export async function GET(req: Request, ctx: RouteContext<'/api/map/stationPaths/[...tilenum]'>) {
-  const tilenumstrs = (await ctx.params).tilenum;
-  const tilenums: number[] = [];
-  tilenumstrs.forEach((v, i) => {
-    const num = Number(v);
-    if (isNaN(num) || num < 0 || i > 3) {
-      return new Response('Bad Request', { status: 400 });
-    }
-    tilenums.push(num);
-  });
-  if (tilenums.length !== 3) {
-    return new Response('Bad Request', { status: 400 });
-  };
-  const [z, x, y] = tilenums as [number, number, number];
+export async function GET(req: Request, ctx: RouteContext<'/api/map/tiles/[z]/[x]/[y]'>) {
+
+  const zxy = await getZXY(ctx.params);
+  if (zxy === null) return getErrRes("ZXY is wrong.", 400);
+  const [z, x, y] = zxy;
 
   const searchparams = new SearchParams(req.url);
   const stationIds = searchparams.getNumArrParam('station_ids');
@@ -28,10 +19,11 @@ export async function GET(req: Request, ctx: RouteContext<'/api/map/stationPaths
       ? [z, x, y, stationPathIds.length, ...stationPathIds]
       : [z,x,y];
 
-  const client = new Client(process.env.DATABASE_URL);
-  await client.connect();
+  try {
+    const client = new Client(process.env.DATABASE_URL);
+    await client.connect();
 
-  const res = await client.query(`
+    const res = await client.query(`
 with bbox as (select st_transform(ST_TileEnvelope($1, $2, $3), 3857) as b, st_transform(ST_TileEnvelope($1, $2, $3), 4326) as bb, '平' as daytype),
 stationPathsMVTgeom as (
   SELECT
@@ -120,7 +112,24 @@ stationPathsLayer as (
 SELECT
   ST_AsMVT(stationPathsLayer, 'stationPathsLayer', 4096, 'geom') as tile
 FROM stationPathsLayer;
-  `, prepared);
+    `, prepared);
+    await client.end();
+    const tile = res.rows[0].tile;
+
+    if (!tile) return getErrRes("MVT error.", 500);
+
+    return new NextResponse(tile, {
+      headers: {
+        'Content-Type': 'application/vnd.mapbox-vector-tile',
+        'Access-Control-Allow-Origin': `${process.env.NEXT_PUBLIC_BASE_URL || ''}`,
+        'Access-Control-Allow-Methods': 'GET',
+        'Access-Control-Allow-Headers': 'Content-Type',
+      },
+    });
+  } catch(e) {
+    return getErrRes("Query execution Error.", 500);
+  }
+
 
 // t as (
 //   select * from r${stationIds.length !== 0 || stationPathIds.length !== 0 ? ' union all select * from s' : ''}
@@ -145,18 +154,7 @@ FROM stationPathsLayer;
 //   ST_AsMVT(u, 'stationPathsLayer', 4096, 'geom') as tile
 // FROM u;
 
-  await client.end();
 
-  const tile = res.rows[0].tile;
-  // console.log(res.rows.length);
-  // console.log(`tile size: ${tile.length} bytes`);
 
-  return new NextResponse(tile, {
-    headers: {
-      'Content-Type': 'application/vnd.mapbox-vector-tile',
-      'Access-Control-Allow-Origin': `${process.env.NEXT_PUBLIC_BASE_URL || ''}`,
-      'Access-Control-Allow-Methods': 'GET',
-      'Access-Control-Allow-Headers': 'Content-Type',
-    },
-  });
+
 };

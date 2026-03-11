@@ -1,49 +1,98 @@
 .nav {
   
-  position: fixed;
-  width: 100%;
-  height: 100%;
-  top: 0;
+  position: absolute;
+  bottom: 0;
   left: 0;
-  overflow-y: scroll;
-  /* scroll-snap-type: y mandatory; */
-  pointer-events: none;
-  background-color: transparent;
-  overscroll-behavior: none;
-  scrollbar-width: none;
-  &::-webkit-scrollbar {display: none;}
+  width: 100%;
+  height: 50%;
+
+  max-height: 80%;
+  min-height: 4rem;
+
+
+
+  .details {
+    /* position: relative; */
+    background-color: var(--bg);
+    /* padding-top: 2rem; */
+    height: 100%;
+
+    overflow-y: scroll;
+    overscroll-behavior: none;
+    scrollbar-width: none;
+    border-radius: 1rem 1rem 0 0;
+    box-shadow: 0rem -0.25rem 0.5rem var(--tx);
+    /* border: 1px solid var(--tx); */
+    box-sizing: border-box;
+    padding: 1rem 1rem 0 1rem;
+    &::-webkit-scrollbar {display: none;}
+
+    summary {
+      position: absolute;
+      top: 0;
+      left: 0;
+      user-select: none;
+      width: 100%;
+      height: 1rem;
+      background-color: var(--bg);
+      /* border-bottom: 1px solid var(--tx); */
+      box-sizing: border-box;
+      /* line-height: calc(2rem - 1px); */
+      border-radius: 1rem 1rem 0 0;
+      list-style: none;
+      display: block;
+      
+      /* padding-left: 1rem; */
+      &::after {
+        content: '';
+        position: absolute;
+        width: 4rem;
+        height: 0.25rem;
+        border-radius: 0.125rem;
+        background-color: var(--tx);
+        top: calc(0.375rem);
+        left: calc(50% - 2rem);
+      }
+    }
+  }
 
   &:has(.details:not([open])) {
+    pointer-events: none;
+    overflow-y: hidden;
     summary {
       position: fixed;
+      top: unset;
       bottom: 1rem;
       left: 1rem;
       width: 2rem;
       height: 2rem;
       display: block;
-      background-color: #222;
-      /* color: #000; */
-      z-index: 100;
-    }
-    .spacer {
-      /* height: calc(10%); */
-      display: none;
+      background-color: var(--bg);
+      pointer-events: auto;
+      z-index: 2;
+      border-radius: 1rem;
+      text-align: center;
+      box-shadow: 0rem 0rem 0.5rem 0.25rem var(--tx);
+      &::before {
+        content: 'i';
+        line-height: 2rem;
+        font-size: 1.5rem;
+      }
+      &::after {
+        display: none;
+      }
     }
     .details {
       height: 0;
+      padding: 0;
     }
-  }
-
-  .spacer {
-    height: calc(100% - 4rem);
-    background-color: transparent;
-  }
-
-  .details {
-    pointer-events: auto;
-    height: 80%;
   }
 }
 
-
-
+.article {
+  display: block;
+  h3 {
+    line-height: 2rem;
+    font-size: 1.5rem;
+  }
+}

@@ -6,7 +6,7 @@ import maplibregl, { GetResourceResponse, MapLibreEvent } from 'maplibre-gl';
 import { setNavFunc, setNavParams, setStationsNavParams } from './mapComponent';
 import { stationPathsGeomLayerStyle, stationGeomLayerStyle, stationStrLayerStyle, stationPathsBaseGeomLayerStyle, stopPathsGeomLayerStyle, stationBaseGeomLayerStyle, stationPathsArrow0LayerStyle, stationPathsArrow1LayerStyle } from './mapstyles';
 import styles from './map.module.css';
-import { SearchParams } from '../lib/util';
+import { SearchParams } from '../../util';
 import arrow from '../../../../public/arrow.png';
 import { useRouter } from 'next/router';
 
@@ -75,51 +75,11 @@ export default function MapClient(props: {
         throw new Error(`Tile fetch error`);
       }
     });
-
-    // maplibregl.ImageSource()
-
-    // const map = mapRef.current?.getMap();
-    // if (!map) return;
-    // const existingImages: Record<string, boolean> = {};
-    // map.on('styleimagemissing', async (e) => {
-    //   const i = await map.loadImage('https://upload.wikimedia.org/wikipedia/commons/7/7c/201408_cat.png');
-    //   map.addImage('arrow', i.data);
-    // });
-
-    
-
-    // map.addSource('point', {
-    //     'type': 'geojson',
-    //     'data': {
-    //         'type': 'FeatureCollection',
-    //         'features': [
-    //             // {
-    //                 'type': 'Feature',
-    //                 'geometry': {
-    //                     'type': 'Point',
-    //                     'coordinates': [0, 0]
-    //                 },
-    //             // },
-
-    //         ]
-    //     }
-    // });
-    // map.addLayer({
-    //     'id': 'svg-symbol',
-    //     'type': 'symbol',
-    //     'source': 'point',
-    //     'layout': {
-    //         'icon-image': 'https://maplibre.org/maplibre-gl-js/docs/assets/logo.svg',
-    //         'icon-overlap': 'always',
-    //         'text-overlap': 'always'
-    //     }
-    // });
   }, []);
 
   const [highlightedState, setHighlightedState] = React.useState<setNavParams>({type: 'default', path: ''});
 
   const setClicked = React.useCallback(async (feature: setNavParams) => {
-    // console.log(feature);
     setHighlightedState(feature);
     props.setNav(feature);
   }, [props.setNav]);
@@ -211,11 +171,12 @@ export default function MapClient(props: {
           ]} // 消すな
           onLoad={onMapLoad}
           attributionControl={false}
+          
         >
           <AttributionControl position='top-right' compact={true} customAttribution={[
             '<a href="https://github.com/yamatekyuko">Yamakyu</a>',
             '<a href="https://www.odpt.org/">ODPT</a>',
-            '<a href="/">ご利用にあたって</a>',
+            '<a href="map/info">ご利用にあたって</a>',
           ]} />
           <Source
             id='stationPathsSource'

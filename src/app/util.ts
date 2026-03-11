@@ -1,3 +1,5 @@
+import { NextResponse } from "next/server";
+
 export const decodeStrParam = (val: string | string[] | undefined): string | null => {
   if (!val) return null;
   if (Array.isArray(val)) return null;
@@ -74,3 +76,21 @@ export class SearchParams {
     return this;
   }
 }
+
+export const getNum = (v: string) => {
+  const n = Number(v);
+  if (isNaN(n)) return null;
+  return n;
+}
+
+export const getZXY = async (params: Promise<{z: string, x: string, y: string}>): Promise<[number, number, number] | null> => {
+  const {z: rz, x: rx, y: ry} = await params;
+  const z = getNum(rz);
+  const x = getNum(rx);
+  const y = getNum(ry);
+  if (z === null || x === null || y === null) return null;
+  return [z, x, y];
+}
+
+// 500 server 400 client
+export const getErrRes = (str: string, status: 500 | 400) => NextResponse.json({error: str}, {status: status});

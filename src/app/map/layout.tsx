@@ -3,6 +3,7 @@ import Image from 'next/image';
 import "./globals.css";
 
 import style from './map.module.css';
+import Scroller from './scroller';
 
 
 
@@ -18,24 +19,25 @@ function Layout(props: {
   nav: React.ReactNode,
 }) {
   return (
-    <html lang="ja-JP">
+    <html lang="ja-JP" className={style.html}>
       <head>
         <link rel="icon" href="/icon/icon.png" type="image/<generated>" sizes="<generated>" />
         <link rel="icon" href="/icon/icon.jpg" type="image/<generated>" sizes="<generated>" />
         <link rel="icon" href="/icon/icon.svg" type="image/<generated>" sizes="<generated>" />
+        {/* <meta name="viewport" content="initial-scale=1.0, viewport-fit=cover" /> */}
       </head>
-      <body id="dark">
+      <body id="dark" className={style.body}>
         <header className={style.header}>
           <Image src="/busmapf3.svg" alt="Busmap F" width={600} height={200} className={style.image} />
         </header>
         <main className={style.main}>
+          {/* <noscript>JavaScriptが有効になっていません。</noscript> */}
           <figure className={style.figure}>
             {props.map}
-            
-              {props.nav}
+            {props.nav}
           </figure>
         </main>
-        <footer></footer>
+        {/* <Scroller y={100} /> */}
       </body>
     </html>
   )

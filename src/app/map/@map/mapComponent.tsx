@@ -1,7 +1,7 @@
 import { redirect, RedirectType } from "next/navigation";
 import MapClient from "./mapClient";
 import { revalidatePath } from "next/cache";
-import { encodeNumParam, encodeStrParam } from "../lib/util";
+import { encodeNumParam, encodeStrParam } from "../../util";
 
 export type setDefaultNavParams = {
   type: 'default',
