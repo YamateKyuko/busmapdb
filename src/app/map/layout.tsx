@@ -27,7 +27,9 @@ function Layout(props: {
         {/* <meta name="viewport" content="initial-scale=1.0, viewport-fit=cover" /> */}
       </head>
       <body id="dark" className={style.body}>
-        <header className={style.header}>
+        <header className={style.header} id="sc">
+          <Scroller />
+          
           <Image src="/busmapf3.svg" alt="Busmap F" width={600} height={200} className={style.image} />
         </header>
         <main className={style.main}>
@@ -37,7 +39,7 @@ function Layout(props: {
             {props.nav}
           </figure>
         </main>
-        {/* <Scroller y={100} /> */}
+        {/*  */}
       </body>
     </html>
   )
